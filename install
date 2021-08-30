@@ -59,8 +59,8 @@ echo
 echo "$(tput setaf 5)----------------------"
 echo 'Installing whichSystem'
 echo "----------------------$(tput sgr 0)"
-cp ./apps/whichSystem.py /usr/bin/
-chmod +x /usr/bin/whichSystem.py
+sudo cp ./apps/whichSystem.py /usr/bin/
+sudo chmod +x /usr/bin/whichSystem.py
 echo 
 echo " whichSystem Installed "
 echo
@@ -70,8 +70,8 @@ echo
 echo "$(tput setaf 5)-------------------------------"
 echo 'Making ZSH default for everyone'
 echo "-------------------------------$(tput sgr 0)"
-usermod --shell /usr/bin/zsh carlos
-usermod --shell /usr/bin/zsh root
+sudo usermod --shell /usr/bin/zsh carlos
+sudo usermod --shell /usr/bin/zsh root
 
 # Solve issues when you migrate from root to a lower privileged user
 echo "$(tput setaf 5)-------------------------------------------------------"
@@ -106,3 +106,13 @@ cd
 git clone https://github.com/gpakosz/.tmux.git
 ln -s -f .tmux/.tmux.conf
 cp .tmux/.tmux.conf.local .
+
+
+clear
+
+
+echo "$(tput setaf 5)--------------------"
+echo "Carlos Perez Andrade"
+echo "--------------------$(tput sgr 0)"
+
+
