@@ -76,9 +76,9 @@ usermod --shell /usr/bin/zsh root
 echo "$(tput setaf 5)-------------------------------------------------------"
 echo 'Solving an issue when migrate from root to a lower user'
 echo "-------------------------------------------------------$(tput sgr 0)"
-chown carlos:carlos /root
-chown carlos:carlos /root/.cache -R
-chown carlos:carlos /root/.local -R
+sudo chown carlos:carlos /root
+sudo chown carlos:carlos /root/.cache -R
+sudo chown carlos:carlos /root/.local -R
 echo "$(tput setaf 1)--------"
 echo " Solved "
 echo "--------$(tput sgr 0)"
@@ -87,7 +87,7 @@ echo "--------$(tput sgr 0)"
 echo "$(tput setaf 5)---------------"
 echo " PowerLevel10k "
 echo "---------------$(tput sgr 0)"
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
+sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
 
 # Install FZF
 echo "$(tput setaf 5)-------------"
