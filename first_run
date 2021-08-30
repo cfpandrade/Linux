@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Update/Upgrade
+apt update
+apt -y upgrade
+
+mkdir tmp
+cd tmp
+
+# Install requirements
+apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions
+
+# Hack nerd fonts
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Hack.zip
+unzip ~/tmp/Hack.zip /usr/local/share/fonts/*
+
+# Download apps
+wget https://github.com/cfpandrade/Linux/raw/main/apps/bat_0.18.3_amd64.deb
+wget https://github.com/cfpandrade/Linux/raw/main/apps/lsd_0.20.1_amd64.deb
+
+# Install apps
+dpkg -i bat_0.18.3_amd64.deb
+dpkg -i lsd_0.20.1_amd64.deb
+
+#ZSH conf
+wget https://github.com/cfpandrade/Linux/blob/main/.zshrc
+mv .zshrc ~/
+
+#ZSH as default
+usermod --shell /usr/bin/zsh carlos
+usermod --shell /usr/bin/zsh root
+
+# Solve issues when you migrate from root to a lower privileged user
+chown carlos:carlos /root
+chown carlos:carlos /root/.cache -R
+chown carlos:carlos /root/.local -R
+
+#Powerlevel10k
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
+
