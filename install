@@ -41,12 +41,13 @@ echo
 echo
 echo
 
-#ZSH conf
+# ZSH conf
 echo "$(tput setaf 5)-----------------"
 echo 'ZSH Configuration'
 echo "-----------------$(tput sgr 0)"
 cp .zshrc ~
-sudo cp -r ./zsh/* /usr/share/
+sudo mkdir /usr/share/zsh
+sudo cp -r ./zsh/* /usr/share/zsh/
 echo "$(tput setaf 1)------"
 echo " Done "
 echo "------$(tput sgr 0)"
