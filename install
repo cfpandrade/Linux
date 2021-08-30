@@ -1,0 +1,107 @@
+#!/bin/bash
+clear
+# Update/Upgrade
+echo "$(tput setaf 5)---------------------------------"
+echo "Updating and Upgrading the system"
+echo "---------------------------------$(tput sgr 0)"
+sudo apt update
+sudo apt -y upgrade
+echo
+echo
+echo
+
+# Install requirements
+echo "$(tput setaf 5)------------------------"
+echo 'Installing requirementes'
+echo "------------------------$(tput sgr 0)"
+
+sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed
+echo
+echo
+echo
+
+# Install apps
+echo "$(tput setaf 5)---------------"
+echo 'Installing apps'
+echo "---------------$(tput sgr 0)"
+sudo dpkg -i ./apps/bat_0.18.3_amd64.deb
+sudo dpkg -i ./apps/lsd_0.20.1_amd64.deb
+echo
+echo
+echo
+
+# Install fonts
+echo "$(tput setaf 5)----------------"
+echo 'Installing fonts'
+echo "----------------$(tput sgr 0)"
+mkdir ~/.fonts
+cp -r ./fonts/* ~/.fonts/
+fc-cache -f -v
+echo
+echo
+echo
+
+#ZSH conf
+echo "$(tput setaf 5)-----------------"
+echo 'ZSH Configuration'
+echo "-----------------$(tput sgr 0)"
+cp .zshrc ~
+sudo cp -r ./zsh/* /usr/share/
+echo "$(tput setaf 1)------"
+echo " Done "
+echo "------$(tput sgr 0)"
+echo
+echo
+echo
+
+# Installing whichSystem
+echo "$(tput setaf 5)----------------------"
+echo 'Installing whichSystem'
+echo "----------------------$(tput sgr 0)"
+cp ./apps/whichSystem.py /usr/bin/
+chmod +x /usr/bin/whichSystem.py
+echo 
+echo " whichSystem Installed "
+echo
+echo
+
+#ZSH as default
+echo "$(tput setaf 5)-------------------------------"
+echo 'Making ZSH default for everyone'
+echo "-------------------------------$(tput sgr 0)"
+usermod --shell /usr/bin/zsh carlos
+usermod --shell /usr/bin/zsh root
+
+# Solve issues when you migrate from root to a lower privileged user
+echo "$(tput setaf 5)-------------------------------------------------------"
+echo 'Solving an issue when migrate from root to a lower user'
+echo "-------------------------------------------------------$(tput sgr 0)"
+chown carlos:carlos /root
+chown carlos:carlos /root/.cache -R
+chown carlos:carlos /root/.local -R
+echo "$(tput setaf 1)--------"
+echo " Solved "
+echo "--------$(tput sgr 0)"
+
+#Powerlevel10k
+echo "$(tput setaf 5)---------------"
+echo " PowerLevel10k "
+echo "---------------$(tput sgr 0)"
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
+
+# Install FZF
+echo "$(tput setaf 5)-------------"
+echo " Install FZF "
+echo "-------------$(tput sgr 0)"
+
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install --key-bindings --completion --all 
+
+# Oh My Tmux
+echo "$(tput setaf 5)--------------------"
+echo " Install Oh-My-Tmux "
+echo "--------------------$(tput sgr 0)"
+cd
+git clone https://github.com/gpakosz/.tmux.git
+ln -s -f .tmux/.tmux.conf
+cp .tmux/.tmux.conf.local .
