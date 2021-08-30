@@ -1,6 +1,48 @@
 #!/bin/bash
 
-#apt update
-#apt -y upgrade
+# Update/Upgrade
+apt update
+apt -y upgrade
 
-apt -y install bat zsh git vim xcb
+#mkdir tmp
+#cd tmp
+
+# Install requirements
+apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions
+mkdir /usr/share/zsh
+mkdir /usr/share/zsh-autosuggestions
+mkdir /usr/share/zsh-syntax-highlighting
+mkdir /usr/share/zsh-plugins
+
+## Hack nerd fonts
+#wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Hack.zip
+#unzip ~/tmp/Hack.zip /usr/local/share/fonts/*
+
+# Download apps
+#wget https://github.com/cfpandrade/Linux/raw/main/apps/bat_0.18.3_amd64.deb
+#wget https://github.com/cfpandrade/Linux/raw/main/apps/lsd_0.20.1_amd64.deb
+
+# Install apps
+dpkg -i ./apps/bat_0.18.3_amd64.deb
+dpkg -i ./apps/lsd_0.20.1_amd64.deb
+
+#ZSH conf
+mv .zshrc ~
+mv ./zsh/* /usr/share/
+
+#ZSH as default
+usermod --shell /usr/bin/zsh carlos
+usermod --shell /usr/bin/zsh root
+
+# Solve issues when you migrate from root to a lower privileged user
+chown carlos:carlos /root
+chown carlos:carlos /root/.cache -R
+chown carlos:carlos /root/.local -R
+
+#Powerlevel10k
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
+
+# Install FZF
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install --key-bindings --completion --all 
+
