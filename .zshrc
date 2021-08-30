@@ -24,12 +24,10 @@ alias catnl='/bin/bat --paging=never'
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
 
-
 # Plugins
-source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 #source /usr/share/zsh-plugins/tmux.plugin.zsh
-
 
 # MKT Function
 function mkt(){
@@ -47,7 +45,6 @@ function extractPorts(){
 	echo -e "[*] Ports copied to clipboard\n"  >> extractPorts.tmp
 	cat extractPorts.tmp; rm extractPorts.tmp
 }
-
 
 # Use modern completion system
 autoload -Uz compinit
@@ -112,3 +109,5 @@ case "${TERM}" in
     bindkey '^[[1;5D' backward-word       # ctrl left
     ;;
 esac
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
