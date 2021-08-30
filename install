@@ -28,6 +28,7 @@ sudo dpkg -i ./apps/bat_0.18.3_amd64.deb
 sudo dpkg -i ./apps/lsd_0.20.1_amd64.deb
 echo
 echo
+sudo apt-mark hold bat
 echo
 
 # Install fonts
