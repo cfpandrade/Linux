@@ -35,7 +35,7 @@ function mkt(){
 	mkdir {content,exploits,nmap,scripts}
 }
 
-# Extract nmap information
+# Extract nmap information22
 function extractPorts(){
 	ports="$(cat $1 | grep -oP '\d{1,5}/open' | awk '{print $1}' FS='/' | xargs | tr ' ' ',')"
 	ip_address="$(cat $1 | grep -oP '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}' | sort -u | head -n 1)"
