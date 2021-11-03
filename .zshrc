@@ -20,12 +20,13 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias cat='/bin/bat'
 alias cant='/bin/cat'
 alias catnl='/bin/bat --paging=never'
+alias nano="micro"
 
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Plugins
-source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/zsh-plugins/sudo.plugin.zsh
 #source /usr/share/zsh-plugins/tmux.plugin.zsh
