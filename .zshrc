@@ -20,6 +20,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias cat='/bin/bat'
 alias cant='/bin/cat'
 alias catnl='/bin/bat --paging=never'
+alias ccc="tr -d '\n' | tr -d ' ' | xclip -sel clip"
 alias nano="micro"
 
 # Fix the Java Problem
