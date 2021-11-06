@@ -22,6 +22,7 @@ alias cant='/bin/cat'
 alias catnl='/bin/bat --paging=never'
 alias ccc="tr -d '\n' | tr -d ' ' | xclip -sel clip"
 alias nano="/usr/bin/micro"
+alias top="/usr/bin/htop"
 
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
