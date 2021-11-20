@@ -20,9 +20,13 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 alias cat='/bin/bat'
 alias cant='/bin/cat'
 alias catnl='/bin/bat --paging=never'
-alias ccc="tr -d '\n' | tr -d ' ' | xclip -sel clip"
-alias nano="/usr/bin/micro"
+alias ccc="sed 's/ *$//' | xclip -sel clip"
+#alias nano="/usr/bin/micro"
 alias top="/usr/bin/htop"
+alias egrep='/usr/bin/egrep --color=always'
+alias grep='/usr/bin/grep --color=always'
+
+
 
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
@@ -77,8 +81,8 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
-    bindkey '\e[H'    beginning-of-line   # home 
-    bindkey '\e[F'    end-of-line         # end  
+    bindkey '\e[H'    beginning-of-line   # home
+    bindkey '\e[F'    end-of-line         # end
     bindkey '\e[5~'   delete-char         # delete
     bindkey '[D'      emacs-backward-word # esc left
     bindkey '[C'      emacs-forward-word  # esc right
