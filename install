@@ -78,9 +78,7 @@ sudo usermod --shell /usr/bin/zsh root
 echo "$(tput setaf 5)-------------------------------------------------------"
 echo 'Solving an issue when migrate from root to a lower user'
 echo "-------------------------------------------------------$(tput sgr 0)"
-sudo chown carlos:carlos /root
-sudo chown carlos:carlos /root/.cache -R
-sudo chown carlos:carlos /root/.local -R
+sudo setfacl -m u:carlos:rwx
 echo "$(tput setaf 1)--------"
 echo " Solved "
 echo "--------$(tput sgr 0)"
