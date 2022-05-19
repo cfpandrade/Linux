@@ -25,6 +25,7 @@ alias ccc="sed 's/ *$//' | xclip -sel clip"
 alias top="/usr/bin/htop"
 alias egrep='/usr/bin/egrep --color=always'
 alias grep='/usr/bin/grep --color=always'
+alias vi='/snap/bin/nvim'
 
 
 

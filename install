@@ -15,7 +15,7 @@ echo "$(tput setaf 5)------------------------"
 echo 'Installing requirementes'
 echo "------------------------$(tput sgr 0)"
 
-sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed micro htop
+sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed micro htop nvim ncdu
 echo
 echo
 echo
