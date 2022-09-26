@@ -71,14 +71,14 @@ echo
 echo "$(tput setaf 5)-------------------------------"
 echo 'Making ZSH default for everyone'
 echo "-------------------------------$(tput sgr 0)"
-sudo usermod --shell /usr/bin/zsh carlos
+sudo usermod --shell /usr/bin/zsh $USER
 sudo usermod --shell /usr/bin/zsh root
 
 # Solve issues when you migrate from root to a lower privileged user
 echo "$(tput setaf 5)-------------------------------------------------------"
 echo 'Solving an issue when migrate from root to a lower user'
 echo "-------------------------------------------------------$(tput sgr 0)"
-sudo setfacl -m u:carlos:rwx
+sudo setfacl -m u:$USER:rwx
 echo "$(tput setaf 1)--------"
 echo " Solved "
 echo "--------$(tput sgr 0)"
