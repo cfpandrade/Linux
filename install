@@ -25,7 +25,7 @@ echo "$(tput setaf 5)---------------"
 echo 'Installing Polybar'
 echo "---------------$(tput sgr 0)"
 sudo apt -y install i3 ccache make cmake-data pkg-config python3-sphinx libcairo2-dev libxcb1-dev libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-xrm-dev libxcb-cursor-dev libasound2-dev libpulse-dev libjsoncpp-dev libmpdclient-dev libcurl4-openssl-dev libnl-genl-3-dev libuv1-dev
-git clone --recursive https://github.com/polybar/polibar ~/Downloads/polybar
+git clone --recursive https://github.com/polybar/polybar ~/Downloads/polybar
 cd ~/Downloads/polybar
 mkdir build
 cd build
