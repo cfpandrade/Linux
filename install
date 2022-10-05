@@ -16,6 +16,8 @@ echo 'Installing requirementes'
 echo "------------------------$(tput sgr 0)"
 
 sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop nvim ncdu
+sudo apt -y install libxcb-util0-dev libxcb-image0-dev ccache libcairo2-dev i3 libxcb-randr0-dev libxcb-composite0-dev
+sudo apt -y sudo apt install make cmake-data pkg-config python3-sphinx libcairo2-dev libxcb1-dev libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-xrm-dev libxcb-cursor-dev libasound2-dev libpulse-dev libjsoncpp-dev libmpdclient-dev libcurl4-openssl-dev libnl-genl-3-dev
 echo
 echo
 echo
