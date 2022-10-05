@@ -16,13 +16,46 @@ echo 'Installing requirementes'
 echo "------------------------$(tput sgr 0)"
 
 sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop nvim ncdu
-# Requirements Polybar
-sudo apt -y install i3 ccache make cmake-data pkg-config python3-sphinx libcairo2-dev libxcb1-dev libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-xrm-dev libxcb-cursor-dev libasound2-dev libpulse-dev libjsoncpp-dev libmpdclient-dev libcurl4-openssl-dev libnl-genl-3-dev
-# Requirements Pycom
-sudo apt install meson libxext-dev libxcb1-dev libxcb-damage0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-render-util0-dev libxcb-render0-dev libxcb-randr0-dev libxcb-composite0-dev libxcb-present-dev libxcb-xinerama0-dev libpixman-1-dev libdbus-1-dev libconfig-dev libgl1-mesa-dev libpcre2-dev libevdev-dev uthash-dev libev-dev libx11-xcb-dev libxcb-glx0-dev
 echo
 echo
 echo
+
+# Install Polybar
+echo "$(tput setaf 5)---------------"
+echo 'Installing Polybar'
+echo "---------------$(tput sgr 0)"
+sudo apt -y install i3 ccache make cmake-data pkg-config python3-sphinx libcairo2-dev libxcb1-dev libxcb-util0-dev libxcb-randr0-dev libxcb-composite0-dev python3-xcbgen xcb-proto libxcb-image0-dev libxcb-icccm4-dev libxcb-xkb-dev libxcb-xrm-dev libxcb-cursor-dev libasound2-dev libpulse-dev libjsoncpp-dev libmpdclient-dev libcurl4-openssl-dev libnl-genl-3-dev libuv1-dev
+git clone --recursive https://github.com/polybar/polibar ~/Downloads/polybar
+cd ~/Downloads/polybar
+mkdir build
+cd build
+cmake ..
+make -j $(nproc)
+sudo make install
+
+# Polybar Colors
+git clone https://github.com/VaughnValle/blue-sky.git ~/Downloads/blue-sky
+mkdir ~/.config/polybar
+cd ~/Downloads/blue-sky/polybar/
+cp * -r ~/.config/polybar
+#echo '~/.config/polybar/./launch.sh' >> ~/.config/bspwm/bspwmrc
+sudo cp ~/Downloads/blue-sky/polybar/fonts/* /usr/share/fonts/truetype
+fc-cache -v
+
+# Install Picom
+echo "$(tput setaf 5)---------------"
+echo 'Installing Picom'
+echo "---------------$(tput sgr 0)"
+sudo apt update
+sudo apt -y install meson libxext-dev libxcb1-dev libxcb-damage0-dev libxcb-xfixes0-dev libxcb-shape0-dev libxcb-render-util0-dev libxcb-render0-dev libxcb-randr0-dev libxcb-composite0-dev libxcb-present-dev libxcb-xinerama0-dev libpixman-1-dev libdbus-1-dev libconfig-dev libgl1-mesa-dev libpcre2-dev libevdev-dev uthash-dev libev-dev libx11-xcb-dev libxcb-glx0-dev
+
+git clone https://github.com/ibhagwan/picom.git ~/Downloads/picom
+cd ~/Downloads/picom
+git submodule update --init --recursive
+meson --buildtype=release . build
+ninja -C build
+sudo ninja -C build install
+
 
 # Install apps
 echo "$(tput setaf 5)---------------"
