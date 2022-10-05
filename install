@@ -15,7 +15,7 @@ echo "$(tput setaf 5)------------------------"
 echo 'Installing requirementes'
 echo "------------------------$(tput sgr 0)"
 
-sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop nvim ncdu
+sudo apt -y install bat zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu
 echo
 echo
 echo
@@ -61,8 +61,8 @@ sudo ninja -C build install
 echo "$(tput setaf 5)---------------"
 echo 'Installing apps'
 echo "---------------$(tput sgr 0)"
-sudo dpkg -i ./apps/bat_0.18.3_amd64.deb
-sudo dpkg -i ./apps/lsd_0.20.1_amd64.deb
+sudo dpkg -i ~/Linux/apps/bat_0.18.3_amd64.deb
+sudo dpkg -i ~/Linux/apps/lsd_0.20.1_amd64.deb
 echo
 echo
 sudo apt-mark hold bat
