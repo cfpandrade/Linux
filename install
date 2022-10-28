@@ -90,6 +90,7 @@ sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/p
 echo "$(tput setaf 5)---------------"
 echo " SNAP "
 echo "---------------$(tput sgr 0)"
+export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
 
