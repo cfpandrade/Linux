@@ -117,15 +117,6 @@ echo
 echo
 echo
 
-clear
-echo "$(tput setaf 5)--------------------"
-echo "Cleaning the install files"
-echo "--------------------$(tput sgr 0)"
-sudo rm -r ~/Downloads/polybar
-sudo rm -r ~/Downloads/blue-sky
-sudo rm -r ~/Downloads/picom
-
-
 
 
 echo "$(tput setaf 5)--------------------"
