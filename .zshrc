@@ -1,4 +1,3 @@
-
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -28,27 +27,36 @@ alias grep='/usr/bin/grep --color=always'
 alias g915='ratbagctl bellowing-paca'
 alias vi='/usr/bin/nvim'
 alias k='kubectl'
-
+alias d='docker'
 
 # Actualizar function
 function actualizar(){
 	clear
-        echo "$(tput setaf 5)---------------------------------------------------"
-	echo "Updating repositories"
-        echo "---------------------------------------------------$(tput sgr 0)"
+	echo "$(tput setaf 5)------------------------------------"
+	echo "Updating the repositories"
+	echo "------------------------------------$(tput sgr 0)"
 	sudo apt update
-        echo "$(tput setaf 5)---------------------------------------------------"
-	echo "Doing a full package upgrade"
-        echo "---------------------------------------------------$(tput sgr 0)"
+        echo "$(tput setaf 5)------------------------------------"
+	echo "Doing a Full Upgrade"
+        echo "------------------------------------$(tput sgr 0)"
 	sudo apt -y full-upgrade
-        echo "$(tput setaf 5)---------------------------------------------------"
+	sudo apt upgrade 2> /dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
+        echo "$(tput setaf 5)------------------------------------"
 	echo "Updating SNAP installs"
-        echo "---------------------------------------------------$(tput sgr 0)"
+        echo "------------------------------------$(tput sgr 0)"
 	sudo snap refresh
-        echo "$(tput setaf 5)---------------------------------------------------"
+        echo "$(tput setaf 5)------------------------------------"
 	echo "Removing old packages and/or fixing broken packages"
-        echo "---------------------------------------------------$(tput sgr 0)"
+        echo "------------------------------------$(tput sgr 0)"
 	sudo apt -y autoremove || sudo apt --fix-broken install
+        echo "$(tput setaf 5)------------------------------------"
+        echo "Checking if a reboot is required"
+        echo "------------------------------------$(tput sgr 0)"
+        if [ -f /var/run/reboot-required ]; then
+          echo 'Reboot Required'
+        else
+          echo 'Reboot NOT Required'
+        fi
 }
 
 # Fix the Java Problem
