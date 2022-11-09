@@ -14,7 +14,7 @@ echo
 echo "$(tput setaf 5)------------------------"
 echo 'Installing requirementes'
 echo "------------------------$(tput sgr 0)"
-sudo apt -y install zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client
+sudo apt -y install zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
 echo
 echo
 echo
