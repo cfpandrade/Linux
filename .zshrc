@@ -11,11 +11,12 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Aliases
+alias tcping='/usr/bin/tcping2 -x 3 -Z'
+alias icat="kitty +kitten icat --align left"
 alias ll='lsd -lh --group-dirs=first'
 alias la='lsd -a --group-dirs=first'
 alias l='lsd --group-dirs=first'
 alias lla='lsd -lha --group-dirs=first'
-#alias actualizar='sudo apt update && sudo apt -y full-upgrade && sudo snap refresh && sudo apt -y autoremove || sudo apt --fix-broken install'
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 alias cat='/bin/bat'
 alias cant='/bin/cat'
@@ -48,14 +49,23 @@ function actualizar(){
         echo "$(tput setaf 5)------------------------------------"
 	echo "Removing old packages and/or fixing broken packages"
         echo "------------------------------------$(tput sgr 0)"
-	sudo apt -y autoremove || sudo apt --fix-broken install
+	sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
         echo "$(tput setaf 5)------------------------------------"
         echo "Checking if a reboot is required"
         echo "------------------------------------$(tput sgr 0)"
         if [ -f /var/run/reboot-required ]; then
-          echo 'Reboot Required'
+          echo
+          echo "     *******************"
+          echo  -e "     * \033[33;7mReboot Required\033[0m *"
+          echo "     *******************"
+          echo
+
         else
-          echo 'Reboot NOT Required'
+          echo
+          echo "     ***********************"
+          echo  -e "     * \033[33;5mReboot NOT Required\033[0m *"
+          echo "     ***********************"
+          echo
         fi
 }
 
@@ -63,14 +73,17 @@ function actualizar(){
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Plugins
-#source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/zsh-plugins/sudo.plugin.zsh
-#source /usr/share/zsh-plugins/tmux.plugin.zsh
 
 # MKT Function
 function mkt(){
 	mkdir {content,exploits,nmap,scripts}
+}
+
+# CheckIP Function
+function checkip(){
+        ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1" ip add | awk '/inet 10./ {print $2}' | sed 's/...$//'
 }
 
 # Extract nmap information
@@ -88,9 +101,9 @@ function extractPorts(){
 # ssh Trinseo
 function ssht(){
 if [ $(hostname) = "Vader" ]; then
-#kitty +kitten ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1"
-tmux rename-window -t${TMUX_PANE} "$1"
-ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1"
+kitty @ launch --type=tab --tab-title "$1" kitty +kitten ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1"
+kitty @ send-text --match-tab=title:$1 'if egrep "export TERM=xterm-256color" .bashrc ; then clear ; else echo "export TERM=xterm-256color" >> .bashrc ; fi' \\x0d
+kitty @ send-text --match-tab=title:$1 export TERM=xterm-256color \\x0d clear \\x0d
 elif [ $(hostname) = "teeupinfubuas01" ]; then
 ssh d2t684526@"$1"
 fi
@@ -99,18 +112,13 @@ fi
 # ssh Trinseo aztrinseoadmin
 function sshta(){
 if [ $(hostname) = "Vader" ]; then
-#kitty +kitten ssh -i ~/.ssh/aztrinseoadmin -At -J carlos@10.9.71.4 aztrinseoadmin@"$1"
-ssh -i ~/.ssh/aztrinseoadmin -At -J carlos@10.9.71.4 aztrinseoadmin@"$1"
+kitty @ launch --type=tab --tab-title "$1" kitty +kitten ssh -i ~/.ssh/aztrinseoadmin -At -J carlos@10.9.71.4 aztrinseoadmin@"$1"
+kitty @ send-text --match-tab=title:$1 'if egrep "export TERM=xterm-256color" .bashrc ; then clear ; else echo "export TERM=xterm-256color" >> .bashrc ; fi' \\x0d
+kitty @ send-text --match-tab=title:$1 export TERM=xterm-256color \\x0d clear \\x0d
 elif [ $(hostname) = "teeupinfubuas01" ]; then
 ssh -i ~/.ssh/aztrinseoadmin aztrinseoadmin@"$1"
 fi
 }
-
-# Set title windows
-#settitle() {
-#    printf "\033k$1\033\\"
-#}
-
 
 # Use modern completion system
 autoload -Uz compinit
@@ -138,8 +146,8 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
-    bindkey "^[[H"    beginning-of-line   # home
-    bindkey "^[[F"    end-of-line         # end
+    bindkey "^[[H"    beginning-of-line   # home 
+    bindkey "^[[F"    end-of-line         # end  
     bindkey '\e[5~'   delete-char         # delete
     bindkey '[D'      emacs-backward-word # esc left
     bindkey '[C'      emacs-forward-word  # esc right
@@ -157,8 +165,8 @@ case "${TERM}" in
     bindkey '^[[4~'   end-of-line         # end
     ;;
   *xterm*) # xterm derivatives
-    bindkey "^[[H"    beginning-of-line   # home
-    bindkey "^[[F"    end-of-line         # end
+    bindkey "^[[H"    beginning-of-line   # home 
+    bindkey "^[[F"    end-of-line         # end  
     bindkey "^[[3~"   delete-char         # delete
     bindkey '\e[1;5C' forward-word        # ctrl right
     bindkey '\e[1;5D' backward-word       # ctrl left
@@ -180,3 +188,4 @@ esac
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 #source <(kubectl completion zsh)
 [[ $commands[kubectl] ]] && source <(kubectl completion zsh)
+export TERM=xterm-256color 
