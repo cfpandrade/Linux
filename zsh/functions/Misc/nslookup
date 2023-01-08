@@ -21,7 +21,7 @@ pmpt=()
 zstyle -s ':nslookup' prompt tmp && pmpt=(-p "$tmp")
 zstyle -s ':nslookup' rprompt tmp && pmpt=("$pmpt[@]" -r "$tmp")
 zstyle -s ':nslookup' pager tmp &&
-    [[ -z "$pager" ]] && pager="${opager:-more}"
+    [[ -z "$pager" ]] && pager="${opager:-/usr/bin/pager}"
 (( $#pmpt )) || pmpt=(-p '> ')
 
 zpty nslookup command nslookup "${(q)@}"

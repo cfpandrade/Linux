@@ -288,11 +288,11 @@ if [[ $flags = *copiousoutput* ]]; then
   # We need to page the output.
   # Careful in case PAGER is a set of commands and arguments.
   local -a pager
-  zsh-mime-contexts -a $suffix pager pager || pager=(${=PAGER:-more})
+  zsh-mime-contexts -a $suffix pager pager || pager=(${=PAGER:-/usr/bin/pager})
   if [[ -n $stdin ]]; then
     cat $argv | $execargs | $pager
   else
-    $execargs | eval ${PAGER:-more}
+    $execargs | eval ${PAGER:-/usr/bin/pager}
   fi
 elif [[ $no_bg = yes || $flags = *needsterminal* || -z $DISPLAY ]]; then
   # Needs a terminal, so run synchronously.

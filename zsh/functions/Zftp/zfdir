@@ -95,15 +95,15 @@ if [[ $force -eq 1 ]]; then
 fi
 
 if [[ -n $file && -f $file ]]; then
-  eval ${PAGER:-more} \$file
+  eval ${PAGER:-/usr/bin/pager} \$file
 else
   if (zftp test); then
     # Works OK in subshells
-    zftp dir $* | tee $file | eval ${PAGER:-more}
+    zftp dir $* | tee $file | eval ${PAGER:-/usr/bin/pager}
   else
     # Doesn't work in subshells (IRIX 6.2 --- why?)
     zftp dir $* >$file
-    eval ${PAGER:-more} $file
+    eval ${PAGER:-/usr/bin/pager} $file
   fi
 fi
 # }

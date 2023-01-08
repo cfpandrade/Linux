@@ -73,10 +73,10 @@ function actualizar(){
 export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Plugins
-source /usr/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/zsh-plugins/sudo.plugin.zsh
-source /usr/share/zsh/zsh-chuck/chucknorris.plugin.zsh
-source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh/plugins/zsh-sudo/sudo.plugin.zsh
+source /usr/share/zsh/plugins/zsh-chuck/chucknorris.plugin.zsh
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # MKT Function
 function mkt(){

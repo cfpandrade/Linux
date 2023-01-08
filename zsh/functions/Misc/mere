@@ -86,4 +86,4 @@ fi | (
   fi |
   nroff -T$terminal -man | $col -x
 ) |
-${=MANPAGER:-${PAGER:-more}} -s
+${=MANPAGER:-${PAGER:-/usr/bin/pager}} -s
