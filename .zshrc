@@ -12,7 +12,7 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 # Aliases
 alias tcping='/usr/bin/tcping2 -x 3 -Z'
-alias icat="kitty +kitten icat --align left"
+alias icat="echo; kitty +kitten icat --align center"
 alias ll='lsd -lh --group-dirs=first'
 alias la='lsd -a --group-dirs=first'
 alias l='lsd --group-dirs=first'
@@ -32,24 +32,24 @@ alias d='docker'
 
 # Actualizar function
 function actualizar(){
-	clear
-	echo "$(tput setaf 5)------------------------------------"
-	echo "Updating the repositories"
-	echo "------------------------------------$(tput sgr 0)"
-	sudo apt update
+  clear
+  echo "$(tput setaf 5)------------------------------------"
+  echo "Updating the repositories"
+  echo "------------------------------------$(tput sgr 0)"
+  sudo apt update
         echo "$(tput setaf 5)------------------------------------"
-	echo "Doing a Full Upgrade"
+  echo "Doing a Full Upgrade"
         echo "------------------------------------$(tput sgr 0)"
-	sudo apt -y full-upgrade
-	sudo apt upgrade 2> /dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
+  sudo apt -y full-upgrade
+  sudo apt upgrade 2> /dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
         echo "$(tput setaf 5)------------------------------------"
-	echo "Updating SNAP installs"
+  echo "Updating SNAP installs"
         echo "------------------------------------$(tput sgr 0)"
-	sudo snap refresh
+  sudo snap refresh
         echo "$(tput setaf 5)------------------------------------"
-	echo "Removing old packages and/or fixing broken packages"
+  echo "Removing old packages and/or fixing broken packages"
         echo "------------------------------------$(tput sgr 0)"
-	sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+  sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
         echo "$(tput setaf 5)------------------------------------"
         echo "Checking if a reboot is required"
         echo "------------------------------------$(tput sgr 0)"
@@ -75,10 +75,12 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # Plugins
 source /usr/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/zsh-plugins/sudo.plugin.zsh
+source /usr/share/zsh/zsh-chuck/chucknorris.plugin.zsh
+source /usr/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # MKT Function
 function mkt(){
-	mkdir {content,exploits,nmap,scripts}
+  mkdir {content,exploits,nmap,scripts}
 }
 
 # CheckIP Function
@@ -88,14 +90,14 @@ function checkip(){
 
 # Extract nmap information
 function extractPorts(){
-	ports="$(cat $1 | grep -oP '\d{1,5}/open' | awk '{print $1}' FS='/' | xargs | tr ' ' ',')"
-	ip_address="$(cat $1 | grep -oP '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}' | sort -u | head -n 1)"
-	echo -e "\n[*] Extracting information...\n" > extractPorts.tmp
-	echo -e "\t[*] IP Address: $ip_address"  >> extractPorts.tmp
-	echo -e "\t[*] Open ports: $ports\n"  >> extractPorts.tmp
-	echo $ports | tr -d '\n' | xclip -sel clip
-	echo -e "[*] Ports copied to clipboard\n"  >> extractPorts.tmp
-	cat extractPorts.tmp; rm extractPorts.tmp
+  ports="$(cat $1 | grep -oP '\d{1,5}/open' | awk '{print $1}' FS='/' | xargs | tr ' ' ',')"
+  ip_address="$(cat $1 | grep -oP '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}' | sort -u | head -n 1)"
+  echo -e "\n[*] Extracting information...\n" > extractPorts.tmp
+  echo -e "\t[*] IP Address: $ip_address"  >> extractPorts.tmp
+  echo -e "\t[*] Open ports: $ports\n"  >> extractPorts.tmp
+  echo $ports | tr -d '\n' | xclip -sel clip
+  echo -e "[*] Ports copied to clipboard\n"  >> extractPorts.tmp
+  cat extractPorts.tmp; rm extractPorts.tmp
 }
 
 # ssh Trinseo
@@ -146,8 +148,8 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
-    bindkey "^[[H"    beginning-of-line   # home 
-    bindkey "^[[F"    end-of-line         # end  
+    bindkey "^[[H"    beginning-of-line   # home
+    bindkey "^[[F"    end-of-line         # end
     bindkey '\e[5~'   delete-char         # delete
     bindkey '[D'      emacs-backward-word # esc left
     bindkey '[C'      emacs-forward-word  # esc right
@@ -165,8 +167,8 @@ case "${TERM}" in
     bindkey '^[[4~'   end-of-line         # end
     ;;
   *xterm*) # xterm derivatives
-    bindkey "^[[H"    beginning-of-line   # home 
-    bindkey "^[[F"    end-of-line         # end  
+    bindkey "^[[H"    beginning-of-line   # home
+    bindkey "^[[F"    end-of-line         # end
     bindkey "^[[3~"   delete-char         # delete
     bindkey '\e[1;5C' forward-word        # ctrl right
     bindkey '\e[1;5D' backward-word       # ctrl left
@@ -188,4 +190,4 @@ esac
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 #source <(kubectl completion zsh)
 [[ $commands[kubectl] ]] && source <(kubectl completion zsh)
-export TERM=xterm-256color 
+export TERM=xterm-256color
