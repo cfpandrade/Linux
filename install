@@ -124,3 +124,4 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 echo "$(tput setaf 5)--------------------"
 echo "Script by: Carlos Perez Andrade"
 echo "--------------------$(tput sgr 0)"
+fortune | cowsay
