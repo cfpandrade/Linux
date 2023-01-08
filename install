@@ -6,6 +6,7 @@ echo "Updating and Upgrading the system"
 echo "---------------------------------$(tput sgr 0)"
 sudo apt update
 sudo apt -y upgrade
+sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
 echo
 echo
 echo
@@ -103,24 +104,23 @@ echo "-------------$(tput sgr 0)"
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install --key-bindings --completion --all 
 
-# Oh My Tmux
+# # Oh My Tmux
+# echo "$(tput setaf 5)--------------------"
+# echo " Install Oh-My-Tmux "
+# echo "--------------------$(tput sgr 0)"
+# cd
+# git clone https://github.com/gpakosz/.tmux.git
+# ln -s -f .tmux/.tmux.conf
+# cp .tmux/.tmux.conf.local .
+# echo
+# echo
+# echo
+# echo
+# echo
+# echo
+
+
+
 echo "$(tput setaf 5)--------------------"
-echo " Install Oh-My-Tmux "
-echo "--------------------$(tput sgr 0)"
-cd
-git clone https://github.com/gpakosz/.tmux.git
-ln -s -f .tmux/.tmux.conf
-cp .tmux/.tmux.conf.local .
-
-echo
-echo
-echo
-echo
-echo
-echo
-
-
-
-echo "$(tput setaf 5)--------------------"
-echo "Carlos Perez Andrade"
+echo "Script by: Carlos Perez Andrade"
 echo "--------------------$(tput sgr 0)"
