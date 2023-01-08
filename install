@@ -123,7 +123,7 @@ sudo chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes
 
 
 clear
-echo "$(tput setaf 5)---------------------------"
+echo "$(tput setaf 5)-------------------------------"
 echo "Script by: Carlos Perez Andrade"
-echo "---------------------------$(tput sgr 0)"
+echo "-------------------------------$(tput sgr 0)"
 fortune | cowsay 2>/dev/null
