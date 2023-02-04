@@ -33,5 +33,5 @@ sudo ./install
 
 ## Note
 - The script assumes that the required files (e.g. local applications, fonts, zsh configuration files) are in the same directory as the script.
-- The script has been tested on a Ubuntu 22.02 and Parrot OS and may need modifications to work on other systems.
+- The script has been tested on Ubuntu 22.02 and Parrot OS and may need modifications to work on other systems.
 - Use the script at your own risk, as it modifies the system configuration.
