@@ -1,5 +1,6 @@
 #!/bin/bash
 clear
+
 # Update/Upgrade
 echo "$(tput setaf 5)---------------------------------"
 echo "Updating and Upgrading the system"

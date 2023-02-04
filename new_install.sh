@@ -1,75 +1,88 @@
 #!/bin/bash
+
+# Clear the screen
 clear
 
-# Variables
-FONTS_DIR="$HOME/.fonts"
-ZSH_DIR="/usr/share/zsh"
-POWERLEVEL10K_DIR="/usr/bin/powerlevel10k"
-FZF_DIR="$HOME/.fzf"
-TMUX_DIR="$HOME/.tmux"
+# Colors
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+reset=$(tput sgr0)
 
-# Update/Upgrade
-echo "$(tput setaf 5)---------------------------------"
-echo "Updating and Upgrading the system"
-echo "---------------------------------$(tput sgr 0)"
-sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
+# Functions
+function header() {
+  echo "${yellow}-----------------${reset}"
+  echo "${yellow} $1 ${reset}"
+  echo "${yellow}-----------------${reset}"
+}
+
+function install_deb_apps() {
+  header "Installing local DEB apps"
+  sudo apt -y install ~/Linux/apps/*.deb
+}
+
+function install_fonts() {
+  header "Installing fonts"
+  mkdir ~/.fonts
+  cp -r ./fonts/* ~/.fonts/
+  fc-cache -f -v
+}
+
+function install_zsh() {
+  header "ZSH Configuration"
+  cp .zshrc ~
+  sudo mkdir /usr/share/zsh
+  sudo cp -r ./zsh/* /usr/share/zsh/
+  sudo usermod --shell /usr/bin/zsh $USER
+  sudo usermod --shell /usr/bin/zsh root
+  sudo setfacl -m u:$USER:rwx
+  header "Done"
+}
+
+function install_powerlevel10k() {
+  header "PowerLevel10k"
+  sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /usr/bin/powerlevel10k
+}
+
+function install_fzf() {
+  header "FZF"
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+  ~/.fzf/install --key-bindings --completion --all 
+  sudo chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes
+}
 
 # Install requirements
-echo "$(tput setaf 5)------------------------"
-echo 'Installing requirements'
-echo "------------------------$(tput sgr 0)"
+header "Installing requirements"
 sudo apt -y install zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick fortune cowsay
 
+# Update and upgrade
+header "Updating and Upgrading the system"
+sudo apt update
+sudo apt -y upgrade
+sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+
 # Install apps
-echo "$(tput setaf 5)---------------"
-echo 'Installing local apps'
-echo "---------------$(tput sgr 0)"
-sudo apt -y install ~/Linux/apps/*.deb
+install_deb_apps
 
 # Install fonts
-echo "$(tput setaf 5)----------------"
-echo 'Installing fonts'
-echo "----------------$(tput sgr 0)"
-mkdir -p "$FONTS_DIR"
-cp -r ./fonts/* "$FONTS_DIR"
-fc-cache -f -v
+install_fonts
 
-# ZSH conf
-echo "$(tput setaf 5)-----------------"
-echo 'ZSH Configuration'
-echo "-----------------$(tput sgr 0)"
-cp .zshrc ~
-sudo mkdir -p "$ZSH_DIR"
-sudo cp -r ./zsh/* "$ZSH_DIR"
+# Install ZSH
+install_zsh
 
-# Installing whichSystem
-echo "$(tput setaf 5)----------------------"
-echo 'Installing whichSystem'
-echo "----------------------$(tput sgr 0)"
-sudo cp ./apps/whichSystem.py /usr/bin/
-sudo chmod +x /usr/bin/whichSystem.py
-echo "whichSystem Installed"
+# Install PowerLevel10k
+install_powerlevel10k
 
-# ZSH as default
-echo "$(tput setaf 5)-------------------------------"
-echo 'Making ZSH default for everyone'
-echo "-------------------------------$(tput sgr 0)"
-sudo usermod --shell /usr/bin/zsh $USER
-sudo usermod --shell /usr/bin/zsh root
+# Install FZF
+install_fzf
 
-# Solve issues when you migrate from root to a lower privileged user
-echo "$(tput setaf 5)-------------------------------------------------------"
-echo 'Solving an issue when migrate from root to a lower user'
-echo "-------------------------------------------------------$(tput sgr 0)"
-sudo setfacl -m u:$USER:rwx
+# Install SNAP apps
+header "SNAP"
+export PATH=/snap/bin:$PATH
+sudo snap install searchsploit
+sudo snap install mysql-shell
 
-# Powerlevel10k
-echo "$(tput setaf 5)---------------"
-echo "PowerLevel10k"
-echo "---------------$(tput sgr 0)"
-sudo git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$POWERLEVEL10K_DIR"
-
-# Installing SNAP apps
-echo "$(tput setaf 5)---------------"
-echo "SNAP"
+clear
+header "Script by: Carlos Perez Andrade"
 echo
+fortune | cowsay 2>/dev/null
