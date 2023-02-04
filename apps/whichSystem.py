@@ -58,4 +58,4 @@ if ttl is None:
 else:
     print_colored("%s (ttl -> %d): %s" % (ip_address, ttl, os_name), color)
 
-print_colored("\n\nDeveloped by: Carlos Andrade", "green")
+print_colored("\n\nDeveloped by: Carlos Andrade ", "green")
