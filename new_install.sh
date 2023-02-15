@@ -32,8 +32,8 @@ function install_fonts() {
 function install_zsh() {
   header "ZSH Configuration"
   cp .zshrc ~
-  sudo mkdir /usr/share/zsh
-  sudo cp -r ./zsh/* /usr/share/zsh/
+#   sudo mkdir /usr/share/zsh
+#   sudo cp -r ./zsh/* /usr/share/zsh/
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
   header "Done"
@@ -69,7 +69,7 @@ install_deb_apps
 install_fonts
 
 # Install ZSH
-# install_zsh
+install_zsh
 
 # Install PowerLevel10k
 install_powerlevel10k
