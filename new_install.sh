@@ -20,6 +20,8 @@ function install_deb_apps() {
   header "Installing local DEB apps"
   sudo apt -y install ~/Linux/apps/bat*.deb
   sudo apt -y install ~/Linux/apps/lsd*.deb
+  sudo cp ~/Linux/apps/whichSystem.py /usr/bin/
+  sudo chmod +x /usr/bin/whichSystem.py
 }
 
 function install_fonts() {
