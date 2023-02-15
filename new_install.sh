@@ -32,8 +32,8 @@ function install_fonts() {
 function install_zsh() {
   header "ZSH Configuration"
   cp .zshrc ~
-#   sudo mkdir /usr/share/zsh
-#   sudo cp -r ./zsh/* /usr/share/zsh/
+  sudo mkdir /usr/share/zsh
+  sudo cp -r ./zsh/* /usr/share/zsh/
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
   header "Done"
