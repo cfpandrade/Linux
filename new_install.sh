@@ -69,7 +69,7 @@ install_deb_apps
 install_fonts
 
 # Install ZSH
-install_zsh
+# install_zsh
 
 # Install PowerLevel10k
 install_powerlevel10k
