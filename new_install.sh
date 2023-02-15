@@ -18,7 +18,8 @@ function header() {
 
 function install_deb_apps() {
   header "Installing local DEB apps"
-  sudo apt -y install ~/Linux/apps/*.deb
+  sudo apt -y install ~/Linux/apps/bat*.deb
+  sudo apt -y install ~/Linux/apps/lsd*.deb
 }
 
 function install_fonts() {
@@ -35,7 +36,6 @@ function install_zsh() {
   sudo cp -r ./zsh/* /usr/share/zsh/
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
-  sudo setfacl -m u:$USER:rwx
   header "Done"
 }
 
@@ -53,7 +53,8 @@ function install_fzf() {
 
 # Install requirements
 header "Installing requirements"
-sudo apt -y install zsh git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick fortune cowsay
+sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick 
+sudo apt -y install acl fortune cowsay
 
 # Update and upgrade
 header "Updating and Upgrading the system"
