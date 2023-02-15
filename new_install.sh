@@ -54,7 +54,7 @@ function install_fzf() {
 # Install requirements
 header "Installing requirements"
 sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick 
-sudo apt -y install acl fortune cowsay
+sudo apt -y install acl fortune cowsay kitty
 
 # Update and upgrade
 header "Updating and Upgrading the system"
