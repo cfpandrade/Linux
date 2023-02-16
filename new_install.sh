@@ -34,7 +34,6 @@ function install_fonts() {
 function install_zsh() {
   header "ZSH Configuration"
   cp .zshrc ~
-  sudo mkdir /usr/share/zsh
   sudo cp -r ./zsh/* /usr/share/zsh/
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
@@ -53,16 +52,25 @@ function install_fzf() {
   sudo chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes
 }
 
+function install_kitty() {
+  header "Kitty"
+  sudo apt -y install kitty
+  cp ~/Linux/apps/kitty/* ~/.config/kitty/
+}
+
 # Install requirements
 header "Installing requirements"
-sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick 
-sudo apt -y install acl fortune cowsay kitty
+sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
+sudo apt -y install acl fortune cowsay locate
 
 # Update and upgrade
 header "Updating and Upgrading the system"
 sudo apt update
 sudo apt -y upgrade
 sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+
+# Install Kitty and configure
+install_kitty
 
 # Install apps
 install_deb_apps
