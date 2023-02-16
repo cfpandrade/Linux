@@ -11,9 +11,9 @@ reset=$(tput sgr0)
 
 # Functions
 function header() {
-  echo "${yellow}----------------------${reset}"
+  echo "${yellow}------------------------${reset}"
   echo "${yellow} $1 ${reset}"
-  echo "${yellow}----------------------${reset}"
+  echo "${yellow}------------------------${reset}"
 }
 
 function install_deb_apps() {
@@ -38,6 +38,7 @@ function install_zsh() {
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
   header "Done"
+  chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes/chucknorris.dat
 }
 
 function install_powerlevel10k() {
