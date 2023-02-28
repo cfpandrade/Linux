@@ -120,6 +120,7 @@ header "SNAP"
 export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
+sudo cp ~/Linux/apps/kitty/* ~/.config/kitty/
 
 clear
 header "Script by: Carlos Perez Andrade"
