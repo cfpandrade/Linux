@@ -68,6 +68,7 @@ function install_sublime() {
 # Install requirements
 header "Adding sources"
 sudo cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
+echo "Sources added to sources.list.d"
 echo ""
 echo ""
 
@@ -111,7 +112,7 @@ export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
 
-clear
+#clear
 header "Script by: Carlos Perez Andrade"
 echo
 fortune | cowsay 2>/dev/null
