@@ -11,9 +11,9 @@ reset=$(tput sgr0)
 
 # Functions
 function header() {
-  echo "${yellow}------------------------${reset}"
+  echo "${yellow}--------------------------------${reset}"
   echo "${yellow} $1 ${reset}"
-  echo "${yellow}------------------------${reset}"
+  echo "${yellow}--------------------------------${reset}"
 }
 
 function install_deb_apps() {
@@ -62,15 +62,21 @@ function install_kitty() {
 function install_sublime() {
   header "Sublime"
   curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
-  sudo add-apt-repository "deb https://download.sublimetext.com/ apt/stable/"
   sudo apt -y install sublime-text
 }
 
 # Install requirements
+header "Adding sources"
+cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
+echo ""
+echo ""
+
 header "Installing requirements"
 sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
 sudo apt -y install acl fortune cowsay locate curl 
 sudo apt -y install software-properties-common
+echo ""
+echo ""
 
 # Update and upgrade
 header "Updating and Upgrading the system"
