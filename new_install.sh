@@ -56,7 +56,7 @@ function install_fzf() {
 function install_kitty() {
   header "Kitty"
   sudo apt -y install kitty
-  cp ~/Linux/apps/kitty/* ~/.config/kitty/
+  sudo cp ~/Linux/apps/kitty/* ~/.config/kitty/
 }
 
 function install_sublime() {
@@ -67,7 +67,7 @@ function install_sublime() {
 
 # Install requirements
 header "Adding sources"
-cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
+sudo cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
 echo ""
 echo ""
 
