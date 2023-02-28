@@ -59,14 +59,24 @@ function install_kitty() {
   cp ~/Linux/apps/kitty/* ~/.config/kitty/
 }
 
+function install_sublime() {
+  header "Sublime"
+  curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
+  sudo add-apt-repository "deb https://download.sublimetext.com/ apt/stable/"
+}
+
+# Install Sublime and configure
+install_sublime
+
 # Install requirements
 header "Installing requirements"
+sudo apt update
 sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
-sudo apt -y install acl fortune cowsay locate
+sudo apt -y install acl fortune cowsay locate curl 
+sudo apt -y install sublime-text
 
 # Update and upgrade
 header "Updating and Upgrading the system"
-sudo apt update
 sudo apt -y upgrade
 sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
 
