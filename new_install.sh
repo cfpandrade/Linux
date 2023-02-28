@@ -65,9 +65,9 @@ function install_sublime() {
   sudo apt -y install sublime-text
 }
 
-#-----------
+#------------
 # Installers
-#-----------
+#------------
 
 # Install requirements
 header "Adding Keys"
