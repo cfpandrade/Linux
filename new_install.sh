@@ -38,7 +38,7 @@ function install_zsh() {
   sudo usermod --shell /usr/bin/zsh $USER
   sudo usermod --shell /usr/bin/zsh root
   header "Done"
-  chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes/chucknorris.dat
+  sudo chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes/chucknorris.dat
 }
 
 function install_powerlevel10k() {
@@ -61,11 +61,17 @@ function install_kitty() {
 
 function install_sublime() {
   header "Sublime"
-  curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
   sudo apt -y install sublime-text
 }
 
 # Install requirements
+header "Adding Keys"
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
+echo "Speedtest and Sublime key added"
+echo ""
+
+
 header "Adding sources"
 sudo cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
 echo "Sources added to sources.list.d"
