@@ -11,6 +11,7 @@ reset=$(tput sgr0)
 
 # Functions
 function header() {
+  echo ""
   echo "${yellow}--------------------------------${reset}"
   echo "${yellow} $1 ${reset}"
   echo "${yellow}--------------------------------${reset}"
@@ -70,9 +71,8 @@ function install_sublime() {
 
 # Install requirements
 header "Adding Keys"
-curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash os=ubuntu dist=trusty
 curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
-echo "Speedtest and Sublime key added"
+echo "Sublime key added"
 echo ""
 
 header "Adding sources"
@@ -121,7 +121,7 @@ export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
 
-#clear
+clear
 header "Script by: Carlos Perez Andrade"
 echo
 fortune | cowsay 2>/dev/null
