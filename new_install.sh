@@ -66,8 +66,6 @@ function install_sublime() {
   sudo apt -y install sublime-text
 }
 
-
-
 # Install requirements
 header "Installing requirements"
 sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
