@@ -64,13 +64,16 @@ function install_sublime() {
   sudo apt -y install sublime-text
 }
 
+#-----------
+# Installers
+#-----------
+
 # Install requirements
 header "Adding Keys"
-curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash
+curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash os=ubuntu dist=trusty
 curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
 echo "Speedtest and Sublime key added"
 echo ""
-
 
 header "Adding sources"
 sudo cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
