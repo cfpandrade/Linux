@@ -15,9 +15,7 @@ To use the script, follow these steps:
 git clone https://github.com/cfpandrade/Linux
 2. Navigate to the repository directory:
 cd Linux
-3. Make the script executable:
-chmod +x install
-4. Run the script as an administrator:
+3. Run the script as an administrator:
 sudo ./install
 
 ## Features
