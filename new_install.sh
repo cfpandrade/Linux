@@ -11,10 +11,11 @@ reset=$(tput sgr0)
 
 # Functions
 function header() {
+  local line=$(printf '%*s' "${#1}" '' | tr ' ' '=')
   echo ""
-  echo "${yellow}--------------------------------${reset}"
-  echo "${yellow} $1 ${reset}"
-  echo "${yellow}--------------------------------${reset}"
+  echo "${red}$line${reset}"
+  echo "${yellow}$1${reset}"
+  echo "${red}$line${reset}"
 }
 
 function install_deb_apps() {
