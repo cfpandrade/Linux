@@ -16,7 +16,7 @@ git clone https://github.com/cfpandrade/Linux
 2. Navigate to the repository directory:
 cd Linux
 3. Run the script as an administrator:
-sudo ./install
+sudo ./install.sh
 
 ## Features
 - Updates and upgrades the system
