@@ -11,7 +11,6 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Aliases
-alias tcping='/usr/bin/tcping2 -x 3 -Z'
 alias icat="echo; kitty +kitten icat --align center"
 alias ll='lsd -lh --group-dirs=first'
 alias la='lsd -a --group-dirs=first'
@@ -25,49 +24,80 @@ alias ccc="sed 's/ *$//' | xclip -sel clip"
 alias top="/usr/bin/htop"
 alias egrep='/usr/bin/egrep --color=always'
 alias grep='/usr/bin/grep --color=always'
-alias g915='ratbagctl bellowing-paca'
-alias vi='/usr/bin/nvim'
+alias g502='ratbagctl bellowing-paca'
+alias g915='ratbagctl hollering-marmot'
+alias vi='/snap/bin/nvim'
 alias k='kubectl'
 alias d='docker'
+alias boxcc=' boxes -d shell | ccc'
+
 
 # Actualizar function
 function actualizar(){
   clear
-  echo "$(tput setaf 5)------------------------------------"
-  echo "Updating the repositories"
-  echo "------------------------------------$(tput sgr 0)"
-  sudo apt update
-        echo "$(tput setaf 5)------------------------------------"
-  echo "Doing a Full Upgrade"
-        echo "------------------------------------$(tput sgr 0)"
-  sudo apt -y full-upgrade
-  sudo apt upgrade 2> /dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
-        echo "$(tput setaf 5)------------------------------------"
-  echo "Updating SNAP installs"
-        echo "------------------------------------$(tput sgr 0)"
-  sudo snap refresh
-        echo "$(tput setaf 5)------------------------------------"
-  echo "Removing old packages and/or fixing broken packages"
-        echo "------------------------------------$(tput sgr 0)"
-  sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
-        echo "$(tput setaf 5)------------------------------------"
-        echo "Checking if a reboot is required"
-        echo "------------------------------------$(tput sgr 0)"
-        if [ -f /var/run/reboot-required ]; then
-          echo
-          echo "     *******************"
-          echo  -e "     * \033[33;7mReboot Required\033[0m *"
-          echo "     *******************"
-          echo
 
-        else
-          echo
-          echo "     ***********************"
-          echo  -e "     * \033[33;5mReboot NOT Required\033[0m *"
-          echo "     ***********************"
-          echo
-        fi
+  # Imprimir la linea
+    imprimir_linea() {
+      local longitud=$(tput cols)
+      local linea=$(printf "%*s" "$longitud" | tr ' ' '-')
+      local rojo=$(tput setaf 1)
+      local reset=$(tput sgr0)
+      printf "%s\n" "${rojo}${linea}${reset}"
+    }
+
+  # Función para imprimir texto centrado
+    centrar_texto() {
+      local texto="$1"
+      local ancho_terminal=$(tput cols)
+      local padding=$(( (ancho_terminal - ${#texto}) / 2 ))
+      printf "\e[31m%*s%s%*s\e[0m\n" "$padding" "" "$texto" "$padding" ""
+    }
+
+  imprimir_linea
+  centrar_texto "Updating the repositories"
+  imprimir_linea
+  sudo apt update
+
+  imprimir_linea
+  centrar_texto "Doing a full upgrade"
+  imprimir_linea
+  sudo apt -y full-upgrade
+  sudo apt upgrade 2>/dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
+
+  imprimir_linea
+  centrar_texto "Updating SNAP Installs"
+  imprimir_linea
+  sudo snap refresh
+
+  imprimir_linea
+  centrar_texto "Removing old packages and/or fixing broken packages"
+  imprimir_linea
+  sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+
+  imprimir_linea
+  centrar_texto "Checking if a reboot is required"
+  imprimir_linea
+  if [ -f /var/run/reboot-required ]; then
+    echo
+    centrar_texto "*******************"
+    centrar_texto "* Reboot Required *"
+    centrar_texto "*******************"
+    echo
+    read -p "Do you want to reboot now? (y/n)" choice
+    case "$choice" in
+      y|Y ) sudo reboot now;;
+      n|N ) echo "OK, you can reboot later.";;
+      * ) echo "Invalid choice. Please enter y/n.";;
+    esac
+  else
+    echo
+    centrar_texto "***********************"
+    centrar_texto "* Reboot NOT Required *"
+    centrar_texto "***********************"
+    echo
+  fi
 }
+
 
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
@@ -148,8 +178,8 @@ source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
-    bindkey "^[[H"    beginning-of-line   # home
-    bindkey "^[[F"    end-of-line         # end
+    bindkey "^[[H"    beginning-of-line   # home 
+    bindkey "^[[F"    end-of-line         # end  
     bindkey '\e[5~'   delete-char         # delete
     bindkey '[D'      emacs-backward-word # esc left
     bindkey '[C'      emacs-forward-word  # esc right
@@ -167,8 +197,8 @@ case "${TERM}" in
     bindkey '^[[4~'   end-of-line         # end
     ;;
   *xterm*) # xterm derivatives
-    bindkey "^[[H"    beginning-of-line   # home
-    bindkey "^[[F"    end-of-line         # end
+    bindkey "^[[H"    beginning-of-line   # home 
+    bindkey "^[[F"    end-of-line         # end  
     bindkey "^[[3~"   delete-char         # delete
     bindkey '\e[1;5C' forward-word        # ctrl right
     bindkey '\e[1;5D' backward-word       # ctrl left
