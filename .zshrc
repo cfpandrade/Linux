@@ -31,11 +31,9 @@ alias k='kubectl'
 alias d='docker'
 alias boxcc=' boxes -d shell | ccc'
 
-
 # Actualizar function
 function actualizar(){
   clear
-
   # Imprimir la linea
     imprimir_linea() {
       local longitud=$(tput cols)
@@ -175,7 +173,6 @@ zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 # BindKeys
-
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
     bindkey "^[[H"    beginning-of-line   # home 
