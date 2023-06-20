@@ -34,6 +34,7 @@ alias boxcc=' boxes -d shell | ccc'
 # Actualizar function
 function actualizar(){
   clear
+
   # Imprimir la linea
     imprimir_linea() {
       local longitud=$(tput cols)
@@ -62,10 +63,16 @@ function actualizar(){
   sudo apt -y full-upgrade
   sudo apt upgrade 2>/dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
 
-  imprimir_linea
-  centrar_texto "Updating SNAP Installs"
-  imprimir_linea
-  sudo snap refresh
+  if command -v snap &> /dev/null; then
+    imprimir_linea
+    centrar_texto "Updating SNAP Installs"
+    imprimir_linea
+    sudo snap refresh
+  else
+    imprimir_linea
+    centrar_texto "Snap is not installed"
+    imprimir_linea
+  fi
 
   imprimir_linea
   centrar_texto "Removing old packages and/or fixing broken packages"
@@ -73,15 +80,16 @@ function actualizar(){
   sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
 
   imprimir_linea
-  centrar_texto "Checking if a reboot is required"
+#  centrar_texto "Checking if a reboot is required"
   imprimir_linea
+
   if [ -f /var/run/reboot-required ]; then
     echo
     centrar_texto "*******************"
     centrar_texto "* Reboot Required *"
     centrar_texto "*******************"
     echo
-    read -p "Do you want to reboot now? (y/n)" choice
+    read -r -p "Do you want to reboot now? (y/n)" choice </dev/tty
     case "$choice" in
       y|Y ) sudo reboot now;;
       n|N ) echo "OK, you can reboot later.";;
@@ -94,8 +102,8 @@ function actualizar(){
     centrar_texto "***********************"
     echo
   fi
-}
 
+}
 
 # Fix the Java Problem
 export _JAVA_AWT_WM_NONREPARENTING=1
@@ -113,7 +121,9 @@ function mkt(){
 
 # CheckIP Function
 function checkip(){
-        ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1" ip add | awk '/inet 10./ {print $2}' | sed 's/...$//'
+  imprimir_linea
+  ssh carlos@10.9.71.4 "ping $1 -c 1" | awk '/from/ {ip = substr($5, 1, length($5)-1); printf "La IP de %s es %s\n", $4, ip}'
+  imprimir_linea
 }
 
 # Extract nmap information
@@ -139,11 +149,12 @@ ssh d2t684526@"$1"
 fi
 }
 
+
 # ssh Trinseo aztrinseoadmin
 function sshta(){
 if [ $(hostname) = "Vader" ]; then
 kitty @ launch --type=tab --tab-title "$1" kitty +kitten ssh -i ~/.ssh/aztrinseoadmin -At -J carlos@10.9.71.4 aztrinseoadmin@"$1"
-kitty @ send-text --match-tab=title:$1 'if egrep "export TERM=xterm-256color" .bashrc ; then clear ; else echo "export TERM=xterm-256color" >> .bashrc ; fi' \\x0d
+kitty @ send-text --match-tab=title:$1 'if egrep "export TERM=xterm-256color" .bashrc ; else echo "export TERM=xterm-256color" >> .bashrc ; fi' \\x0d
 kitty @ send-text --match-tab=title:$1 export TERM=xterm-256color \\x0d clear \\x0d
 elif [ $(hostname) = "teeupinfubuas01" ]; then
 ssh -i ~/.ssh/aztrinseoadmin aztrinseoadmin@"$1"
@@ -173,6 +184,7 @@ zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 source /usr/bin/powerlevel10k/powerlevel10k.zsh-theme
 
 # BindKeys
+
 case "${TERM}" in
   cons25*|linux) # plain BSD/Linux console
     bindkey "^[[H"    beginning-of-line   # home 
