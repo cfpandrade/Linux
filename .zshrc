@@ -138,7 +138,7 @@ function extractPorts(){
   cat extractPorts.tmp; rm extractPorts.tmp
 }
 
-# ssh Trinseo
+# ssht Trinseo
 function ssht(){
 if [ $(hostname) = "Vader" ]; then
 kitty @ launch --type=tab --tab-title "$1" kitty +kitten ssh -i ~/.ssh/teeupinfra -At -J carlos@10.9.71.4 d2t684526@"$1"
@@ -149,8 +149,7 @@ ssh d2t684526@"$1"
 fi
 }
 
-
-# ssh Trinseo aztrinseoadmin
+# sshta Trinseo aztrinseoadmin
 function sshta(){
 if [ $(hostname) = "Vader" ]; then
 kitty @ launch --type=tab --tab-title "$1" kitty +kitten ssh -i ~/.ssh/aztrinseoadmin -At -J carlos@10.9.71.4 aztrinseoadmin@"$1"
