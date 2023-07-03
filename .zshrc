@@ -29,7 +29,7 @@ alias g915='ratbagctl hollering-marmot'
 alias vi='/snap/bin/nvim'
 alias k='kubectl'
 alias d='docker'
-alias boxcc=' boxes -d shell | ccc'
+alias boxcc='boxes -d shell'
 
 # Actualizar function
 function actualizar(){
@@ -161,7 +161,6 @@ elif [ $(hostname) = "teeupinfubuas01" ]; then
 ssh d2t684526@"$1"
 fi
 }
-
 
 # ssh Trinseo aztrinseoadmin
 function sshta(){
