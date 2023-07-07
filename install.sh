@@ -5,13 +5,14 @@ clear
 
 # Colors
 red=$(tput setaf 1)
-green=$(tput setaf 2)
+#green=$(tput setaf 2)
 yellow=$(tput setaf 3)
 reset=$(tput sgr0)
 
 # Functions
 function header() {
-  local line=$(printf '%*s' "${#1}" '' | tr ' ' '=')
+  local line
+  line=$(printf '%*s' "${#1}" '' | tr ' ' '=')
   echo ""
   echo "${red}$line${reset}"
   echo "${yellow}$1${reset}"
@@ -37,7 +38,7 @@ function install_zsh() {
   header "ZSH Configuration"
   cp .zshrc ~
   sudo cp -r ./zsh/* /usr/share/zsh/
-  sudo usermod --shell /usr/bin/zsh $USER
+  sudo usermod --shell /usr/bin/zsh "$USER"
   sudo usermod --shell /usr/bin/zsh root
   header "Done"
   sudo chmod 777 /usr/share/zsh/plugins/zsh-chuck/fortunes/chucknorris.dat
