@@ -20,9 +20,9 @@ function header() {
 
 function install_deb_apps() {
   header "Installing local DEB apps"
-  sudo apt -y install ~/Linux/apps/bat*.deb
-  sudo apt -y install ~/Linux/apps/lsd*.deb
-  sudo cp ~/Linux/apps/whichSystem.py /usr/bin/
+  sudo apt -y install ./apps/bat*.deb
+  sudo apt -y install ./apps/lsd*.deb
+  sudo cp ./apps/whichSystem.py /usr/bin/
   sudo chmod +x /usr/bin/whichSystem.py
 }
 
@@ -58,7 +58,7 @@ function install_fzf() {
 function install_kitty() {
   header "Kitty"
   sudo apt -y install kitty
-  sudo cp ~/Linux/apps/kitty/* ~/.config/kitty/
+  sudo cp ./apps/kitty/* ~/.config/kitty/
 }
 
 function install_sublime() {
@@ -77,7 +77,7 @@ echo "Sublime key added"
 echo ""
 
 header "Adding sources"
-sudo cp ~/Linux/apps/sources/* /etc/apt/sources.list.d/
+sudo cp ./apps/sources/* /etc/apt/sources.list.d/
 echo "Sources added to sources.list.d"
 echo ""
 echo ""
@@ -122,7 +122,7 @@ header "SNAP"
 export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
-sudo cp ~/Linux/apps/kitty/* ~/.config/kitty/
+sudo cp ./apps/kitty/* ~/.config/kitty/
 
 clear
 header "Script by: Carlos Perez Andrade"
