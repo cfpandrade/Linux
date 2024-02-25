@@ -26,7 +26,7 @@ alias egrep='/usr/bin/egrep --color=always'
 alias grep='/usr/bin/grep --color=always'
 alias g502='ratbagctl bellowing-paca'
 alias g915='ratbagctl hollering-marmot'
-alias vi='/snap/bin/nvim'
+alias vi='/usr/bin/nvim'
 alias k='kubectl'
 alias d='docker'
 alias boxcc='boxes -d shell'
@@ -113,6 +113,13 @@ source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-sudo/sudo.plugin.zsh
 source /usr/share/zsh/plugins/zsh-chuck/chucknorris.plugin.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# NTFY Function
+function ntfy() {
+  msg=$1
+  tit=${2:-"Casa"}
+  curl -H "Title:$tit" -d "$msg" https://ntfy.perezandrade.com/Home
+}
 
 # MKT Function
 function mkt(){
