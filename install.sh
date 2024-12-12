@@ -123,6 +123,8 @@ header "SNAP"
 export PATH=/snap/bin:$PATH
 sudo snap install searchsploit
 sudo snap install mysql-shell
+sudo snap install teams-for-linux telegram-desktop thunderbird whatsapp-linux-app wps-office-multilang
+sudo snap install powershell bitwarden sublime-text
 sudo cp ./apps/kitty/* ~/.config/kitty/
 
 clear
