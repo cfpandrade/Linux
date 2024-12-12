@@ -72,11 +72,6 @@ function install_sublime() {
 #------------
 
 # Install requirements
-header "Adding Keys"
-curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
-echo "Sublime key added"
-echo ""
-
 header "Adding sources"
 sudo cp ./apps/sources/* /etc/apt/sources.list.d/
 echo "Sources added to sources.list.d"
