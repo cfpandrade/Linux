@@ -34,6 +34,7 @@ alias boxcc='boxes -d shell'
 # Actualizar function
 function actualizar(){
   clear
+  clear
 
   # Imprimir la linea
     imprimir_linea() {
