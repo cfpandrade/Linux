@@ -72,11 +72,6 @@ function install_sublime() {
 #------------
 
 # Install requirements
-header "Adding Keys"
-curl -fsSL https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add
-echo "Sublime key added"
-echo ""
-
 header "Adding sources"
 sudo cp ./apps/sources/* /etc/apt/sources.list.d/
 echo "Sources added to sources.list.d"
@@ -87,7 +82,7 @@ header "Installing requirements"
 sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
 sudo apt -y install acl fortune cowsay locate curl 
 sudo apt -y install software-properties-common
-sudo apt -y install docker.io docker docker-compose docker-clean
+sudo apt -y install docker.io docker-compose docker-clean
 echo ""
 echo ""
 
@@ -121,8 +116,18 @@ install_fzf
 # Install SNAP apps
 header "SNAP"
 export PATH=/snap/bin:$PATH
-sudo snap install searchsploit
+sudo snap install bitwarden
+sudo snap install brave
 sudo snap install mysql-shell
+sudo snap install powershell
+sudo snap install searchsploit
+sudo snap install spotify
+sudo snap install sublime-text
+sudo snap install teams-for-linux
+sudo snap install telegram-desktop
+sudo snap install thunderbird
+sudo snap install whatsapp-linux-app
+sudo snap install wps-office-multilang
 sudo cp ./apps/kitty/* ~/.config/kitty/
 
 clear

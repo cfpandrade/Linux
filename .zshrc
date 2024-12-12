@@ -62,7 +62,7 @@ function actualizar(){
   centrar_texto "Doing a full upgrade"
   imprimir_linea
   sudo apt -y full-upgrade
-  sudo apt upgrade 2>/dev/null | awk '/^[ ]/ {print $0}' | xargs sudo apt -y --allow-change-held-packages install
+  sudo apt list --upgradable 2>/dev/null | awk -F/ '/upgradable/ {print $1}' | xargs -r sudo apt -y --allow-change-held-packages install
 
   if command -v snap &> /dev/null; then
     imprimir_linea
