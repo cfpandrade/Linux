@@ -118,14 +118,19 @@ header "SNAP"
 export PATH=/snap/bin:$PATH
 sudo snap install bitwarden
 sudo snap install brave
+sudo snap install code
+sudo snap install kubectl
 sudo snap install mysql-shell
+sudo snap install onenote-desktop
 sudo snap install powershell
 sudo snap install searchsploit
 sudo snap install spotify
+sudo snap install storage-explorer
 sudo snap install sublime-text
 sudo snap install teams-for-linux
 sudo snap install telegram-desktop
 sudo snap install thunderbird
+sudo snap install vlc
 sudo snap install whatsapp-linux-app
 sudo snap install wps-office-multilang
 sudo cp ./apps/kitty/* ~/.config/kitty/
