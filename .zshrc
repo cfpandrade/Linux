@@ -34,7 +34,6 @@ alias boxcc='boxes -d shell'
 # Actualizar function
 function actualizar(){
   clear
-  clear
 
   # Imprimir la linea
     imprimir_linea() {
@@ -81,7 +80,6 @@ function actualizar(){
   sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
 
   imprimir_linea
-#  centrar_texto "Checking if a reboot is required"
   imprimir_linea
 
   if [ -f /var/run/reboot-required ]; then
@@ -90,12 +88,14 @@ function actualizar(){
     centrar_texto "* Reboot Required *"
     centrar_texto "*******************"
     echo
-    read -r -p "Do you want to reboot now? (y/n)" choice </dev/tty
-    case "$choice" in
-      y|Y ) sudo reboot now;;
-      n|N ) echo "OK, you can reboot later.";;
-      * ) echo "Invalid choice. Please enter y/n.";;
-    esac
+    read -t 60 -r -p "Do you want to reboot now? (y/n): " choice
+    if [[ $choice =~ ^[Yy]$ ]]; then
+      sudo reboot now
+    elif [[ $choice =~ ^[Nn]$ || -z $choice ]]; then
+      echo "Reboot skipped. You can reboot later."
+    else
+      echo "Invalid choice. Skipping reboot."
+    fi
   else
     echo
     centrar_texto "***********************"
@@ -103,7 +103,6 @@ function actualizar(){
     centrar_texto "***********************"
     echo
   fi
-
 }
 
 # Fix the Java Problem
