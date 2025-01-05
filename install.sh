@@ -131,7 +131,7 @@ sudo snap install teams-for-linux
 sudo snap install telegram-desktop
 sudo snap install thunderbird
 sudo snap install vlc
-sudo snap install whatsapp-linux-app
+sudo snap install whatsie
 sudo snap install wps-office-multilang
 sudo cp ./apps/kitty/* ~/.config/kitty/
 
