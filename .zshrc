@@ -83,25 +83,27 @@ function actualizar(){
   imprimir_linea
 
   if [ -f /var/run/reboot-required ]; then
-    echo
-    centrar_texto "*******************"
-    centrar_texto "* Reboot Required *"
-    centrar_texto "*******************"
-    echo
-    read -t 60 -r -p "Do you want to reboot now? (y/n): " choice
-    if [[ $choice =~ ^[Yy]$ ]]; then
-      sudo reboot now
-    elif [[ $choice =~ ^[Nn]$ || -z $choice ]]; then
-      echo "Reboot skipped. You can reboot later."
-    else
-      echo "Invalid choice. Skipping reboot."
-    fi
+      echo
+      centrar_texto "*******************"
+      centrar_texto "* Reboot Required *"
+      centrar_texto "*******************"
+      echo
+      echo -n "Do you want to reboot now? (y/n): "
+      read -r -k 1 -s -t 60 choice
+      echo  # Ensure a new line after input
+      if [[ $choice =~ ^[Yy]$ ]]; then
+        sudo reboot now
+      elif [[ $choice =~ ^[Nn]$ || -z $choice ]]; then
+        echo "Reboot skipped. You can reboot later."
+      else
+        echo "Invalid choice. Skipping reboot."
+      fi
   else
-    echo
-    centrar_texto "***********************"
-    centrar_texto "* Reboot NOT Required *"
-    centrar_texto "***********************"
-    echo
+      echo
+      centrar_texto "***********************"
+      centrar_texto "* Reboot NOT Required *"
+      centrar_texto "***********************"
+      echo
   fi
 }
 
