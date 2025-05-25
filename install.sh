@@ -83,6 +83,8 @@ sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk se
 sudo apt -y install acl fortune cowsay locate curl 
 sudo apt -y install software-properties-common
 sudo apt -y install docker.io docker-compose docker-clean
+sudo apt -y install duf ripgrep iotop-c dstat progress termshark ipcalc procs unp taskwarrior asciinema
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 echo ""
 echo ""
 
@@ -116,6 +118,7 @@ install_fzf
 # Install SNAP apps
 header "SNAP"
 export PATH=/snap/bin:$PATH
+sudo snap install dog
 sudo snap install bitwarden
 sudo snap install brave
 sudo snap install code
