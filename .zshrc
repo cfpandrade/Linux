@@ -23,13 +23,16 @@ alias catnl='/bin/bat --paging=never'
 alias ccc="sed 's/ *$//' | xclip -sel clip"
 alias top="/usr/bin/htop"
 alias egrep='/usr/bin/egrep --color=always'
-alias grep='/usr/bin/grep --color=always'
+#alias grep='/usr/bin/grep --color=always'
 alias g502='ratbagctl bellowing-paca'
 alias g915='ratbagctl hollering-marmot'
 alias vi='/usr/bin/nvim'
 alias k='kubectl'
 alias d='docker'
 alias boxcc='boxes -d shell'
+alias df='duf'
+alias dig='dog'
+alias grep='rg'
 
 # Actualizar function
 function actualizar(){
