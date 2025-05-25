@@ -118,6 +118,7 @@ install_fzf
 # Install SNAP apps
 header "SNAP"
 export PATH=/snap/bin:$PATH
+sudo snap install --classic waveterm
 sudo snap install dog
 sudo snap install bitwarden
 sudo snap install brave
