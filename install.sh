@@ -72,9 +72,9 @@ function install_sublime() {
 #------------
 
 # Install requirements
-header "Adding sources"
-sudo cp ./apps/sources/* /etc/apt/sources.list.d/
-echo "Sources added to sources.list.d"
+#header "Adding sources"
+#sudo cp ./apps/sources/* /etc/apt/sources.list.d/
+#echo "Sources added to sources.list.d"
 echo ""
 echo ""
 
@@ -128,15 +128,16 @@ sudo snap install mysql-shell
 sudo snap install onenote-desktop
 sudo snap install powershell
 sudo snap install searchsploit
+sudo snap install slack
 sudo snap install spotify
 sudo snap install storage-explorer
-sudo snap install sublime-text
 sudo snap install teams-for-linux
 sudo snap install telegram-desktop
 sudo snap install thunderbird
 sudo snap install vlc
 sudo snap install whatsie
 sudo snap install wps-office-multilang
+sudo snap install --classic sublime-text
 sudo cp ./apps/kitty/* ~/.config/kitty/
 
 clear
