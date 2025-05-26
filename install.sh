@@ -62,11 +62,6 @@ function install_kitty() {
   sudo cp ./apps/kitty/* ~/.config/kitty/
 }
 
-function install_sublime() {
-  header "Sublime"
-  sudo apt -y install sublime-text
-}
-
 #------------
 # Installers
 #------------
@@ -93,9 +88,6 @@ header "Updating and Upgrading the system"
 sudo apt update
 sudo apt -y upgrade
 sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
-
-# Install Sublime and configure
-install_sublime
 
 # Install Kitty and configure
 install_kitty
