@@ -79,7 +79,7 @@ echo ""
 echo ""
 
 header "Installing requirements"
-sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd default-mysql-client imagemagick
+sudo apt -y install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu snapd imagemagick mariadb-client
 sudo apt -y install acl fortune cowsay locate curl 
 sudo apt -y install software-properties-common
 sudo apt -y install docker.io docker-compose docker-clean
