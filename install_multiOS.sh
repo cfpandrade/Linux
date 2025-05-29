@@ -73,7 +73,7 @@ install_core_packages(){
   header "Installing requirements"
   sudo $PM install git vim xcb fonts-powerline tmux zsh-autosuggestions mawk sed htop neovim ncdu imagemagick mariadb-client \
                    acl fortune cowsay locate curl software-properties-common docker.io docker-compose docker-clean \
-                   duf ripgrep iotop-c dstat progress termshark ipcalc procs unp taskwarrior asciinema
+                   duf ripgrep iotop-c dstat progress termshark ipcalc unp taskwarrior asciinema
   command -v snap >/dev/null || sudo $PM install snapd
   curl -s https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 }
@@ -92,7 +92,7 @@ install_snap_apps(){
   header "SNAP apps"
   export PATH=/snap/bin:$PATH
   snaplist=(waveterm dog bitwarden brave code kubectl mysql-shell onenote-desktop powershell searchsploit slack spotify \
-            storage-explorer teams-for-linux telegram-desktop thunderbird vlc whatsie wps-office-multilang sublime-text)
+            storage-explorer teams-for-linux telegram-desktop thunderbird vlc whatsie wps-office-multilang sublime-text procs )
   for pkg in "${snaplist[@]}"; do
     sudo snap install --classic "$pkg" 2>/dev/null || sudo snap install "$pkg" 2>/dev/null
   done
