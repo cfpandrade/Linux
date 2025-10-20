@@ -29,8 +29,39 @@ sudo ./install.sh
 - Installs the fzf fuzzy finder tool
 - Displays a fortune message after the script finishes executing
 
+### New Improvements (v2.0)
+- **Comprehensive logging**: All actions are logged to `~/linux-install.log` with timestamps
+- **Error handling**: Robust error checking and graceful degradation when components fail
+- **Idempotent operations**: Safe to run multiple times - skips already installed components
+- **Smart updates**: Updates existing installations (e.g., PowerLevel10k, FZF) instead of failing
+- **Backup protection**: Automatically backs up existing configuration files (e.g., .zshrc)
+- **Configurable installation**: Use `install.conf` to selectively enable/disable components
+- **Better validation**: Checks for required files and directories before proceeding
+- **Detailed progress**: Color-coded output showing what's being installed and any issues
+
 ### Customization
-The list of snap packages installed by the script is stored in `snap_packages.txt`.  Edit this file to add or remove applications without modifying the script itself.
+
+#### Snap Packages
+The list of snap packages installed by the script is stored in `snap_packages.txt`. Edit this file to add or remove applications without modifying the script itself. Lines starting with `#` are treated as comments.
+
+#### Installation Components
+To customize which components are installed:
+1. Copy the example configuration:
+   ```bash
+   cp install.conf.example install.conf
+   ```
+2. Edit `install.conf` and set any component to `false` to skip it:
+   ```bash
+   INSTALL_KITTY=false        # Skip Kitty terminal installation
+   INSTALL_SNAP_APPS=false    # Skip all snap apps
+   ```
+3. Run the script normally - it will respect your configuration
+
+#### Custom Log Location
+Set a custom log file location by editing `install.conf`:
+```bash
+LOGFILE="/path/to/custom/install.log"
+```
 
 ## Note
 - The script assumes that the required files (e.g. local applications, fonts, zsh configuration files) are in the same directory as the script. You can replace the fonts under `fonts/` with your favourites before running it.

@@ -1,0 +1,20 @@
+# Linux Installation Script Configuration
+# Copy this file to install.conf and modify as needed
+#
+# Usage: cp install.conf.example install.conf
+#        Edit install.conf to enable/disable components
+#        Run: sudo ./install.sh
+
+# Set to false to skip any installation step
+INSTALL_CORE_PACKAGES=true
+UPDATE_SYSTEM=true
+INSTALL_KITTY=true
+INSTALL_DEB_APPS=true
+INSTALL_FONTS=true
+INSTALL_ZSH=true
+INSTALL_POWERLEVEL10K=true
+INSTALL_FZF=true
+INSTALL_SNAP_APPS=true
+
+# Custom log file location (optional)
+# LOGFILE="$HOME/custom-install.log"
