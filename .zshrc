@@ -23,13 +23,16 @@ alias catnl='/bin/bat --paging=never'
 alias ccc="sed 's/ *$//' | xclip -sel clip"
 alias top="/usr/bin/htop"
 alias egrep='/usr/bin/egrep --color=always'
-alias grep='/usr/bin/grep --color=always'
+#alias grep='/usr/bin/grep --color=always'
 alias g502='ratbagctl bellowing-paca'
 alias g915='ratbagctl hollering-marmot'
 alias vi='/usr/bin/nvim'
 alias k='kubectl'
 alias d='docker'
 alias boxcc='boxes -d shell'
+alias df='duf'
+alias dig='dog'
+alias grep='rg'
 
 # Actualizar function
 function actualizar(){
@@ -83,25 +86,27 @@ function actualizar(){
   imprimir_linea
 
   if [ -f /var/run/reboot-required ]; then
-    echo
-    centrar_texto "*******************"
-    centrar_texto "* Reboot Required *"
-    centrar_texto "*******************"
-    echo
-    read -t 60 -r -p "Do you want to reboot now? (y/n): " choice
-    if [[ $choice =~ ^[Yy]$ ]]; then
-      sudo reboot now
-    elif [[ $choice =~ ^[Nn]$ || -z $choice ]]; then
-      echo "Reboot skipped. You can reboot later."
-    else
-      echo "Invalid choice. Skipping reboot."
-    fi
+      echo
+      centrar_texto "*******************"
+      centrar_texto "* Reboot Required *"
+      centrar_texto "*******************"
+      echo
+      echo -n "Do you want to reboot now? (y/n): "
+      read -r -k 1 -s -t 60 choice
+      echo  # Ensure a new line after input
+      if [[ $choice =~ ^[Yy]$ ]]; then
+        sudo reboot now
+      elif [[ $choice =~ ^[Nn]$ || -z $choice ]]; then
+        echo "Reboot skipped. You can reboot later."
+      else
+        echo "Invalid choice. Skipping reboot."
+      fi
   else
-    echo
-    centrar_texto "***********************"
-    centrar_texto "* Reboot NOT Required *"
-    centrar_texto "***********************"
-    echo
+      echo
+      centrar_texto "***********************"
+      centrar_texto "* Reboot NOT Required *"
+      centrar_texto "***********************"
+      echo
   fi
 }
 
