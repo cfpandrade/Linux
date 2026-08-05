@@ -1,205 +1,422 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# macOS workstation bootstrap — the Homebrew counterpart of install.sh
+#   Usage:  ./install_mac.sh                # run everything
+#           ./install_mac.sh zsh kitty llm  # run only some modules
+#           ./install_mac.sh --list         # show available modules
+#           ./install_mac.sh --dry-run      # print what would run
+#
+# Do NOT run with sudo: Homebrew refuses to work as root and the script needs
+# your real $HOME.
 
-# Clear the screen
-clear
+set -uo pipefail
 
-# Colors
-red=$(tput setaf 1)
-#green=$(tput setaf 2)
-yellow=$(tput setaf 3)
-reset=$(tput sgr0)
+REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_DIR" || exit 1
 
-# Functions
-function header() {
+DRY_RUN=0
+FAILURES=()
+SKIPPED=()
+BREW_PREFIX=""
+
+USER="${USER:-$(id -un)}"
+
+#------------
+# Output helpers
+#------------
+
+if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
+  red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3)
+  blue=$(tput setaf 4); reset=$(tput sgr0)
+else
+  red=""; green=""; yellow=""; blue=""; reset=""
+fi
+
+header() {
   local line
   line=$(printf '%*s' "${#1}" '' | tr ' ' '=')
-  echo ""
-  echo "${red}$line${reset}"
-  echo "${yellow}$1${reset}"
-  echo "${red}$line${reset}"
+  printf '\n%s\n%s\n%s\n' "${red}${line}${reset}" "${yellow}${1}${reset}" "${red}${line}${reset}"
 }
 
-function check_homebrew() {
-  if ! command -v brew &> /dev/null; then
-    header "Instalando Homebrew"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+info() { printf '  %s\n' "$1"; }
+ok()   { printf '  %s%s%s\n' "$green" "$1" "$reset"; }
+warn() { printf '  %s%s%s\n' "$yellow" "$1" "$reset"; }
+err()  { printf '  %s%s%s\n' "$red" "$1" "$reset"; FAILURES+=("$1"); }
 
-    # Configurar Homebrew en el PATH
-    if [[ $(uname -m) == 'arm64' ]]; then
-      echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-      echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.zprofile
-      eval "$(/usr/local/bin/brew shellenv)"
+run() {
+  if (( DRY_RUN )); then
+    printf '  %s[dry-run]%s %s\n' "$blue" "$reset" "$*"
+    return 0
+  fi
+  "$@"
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+#------------
+# Environment
+#------------
+
+require_macos() {
+  [[ "$(uname -s)" == "Darwin" ]] || {
+    err "This script is for macOS. On Linux use ./install.sh"
+    exit 1
+  }
+}
+
+require_not_root() {
+  if [[ ${EUID} -eq 0 ]]; then
+    err "Run this script as your normal user; Homebrew refuses to run as root."
+    exit 1
+  fi
+}
+
+ensure_brew() {
+  if have brew; then
+    BREW_PREFIX="$(brew --prefix)"
+    return 0
+  fi
+
+  header "Homebrew"
+  if ! xcode-select -p >/dev/null 2>&1; then
+    info "installing the Command Line Tools first (a dialog may appear)"
+    run xcode-select --install
+    warn "finish the Command Line Tools installation, then run this script again"
+    exit 1
+  fi
+
+  (( DRY_RUN )) || /bin/bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  if [[ -x /opt/homebrew/bin/brew ]]; then
+    BREW_PREFIX=/opt/homebrew
+  elif [[ -x /usr/local/bin/brew ]]; then
+    BREW_PREFIX=/usr/local
+  else
+    err "Homebrew installation failed"
+    exit 1
+  fi
+  eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+  ok "Homebrew installed in $BREW_PREFIX"
+}
+
+#------------
+# Package helpers
+#------------
+
+brew_installed()      { brew list --formula --versions "$1" >/dev/null 2>&1; }
+brew_cask_installed() { brew list --cask --versions "$1" >/dev/null 2>&1; }
+
+brew_install() {
+  local pkg
+  for pkg in "$@"; do
+    if brew_installed "$pkg"; then
+      info "$pkg already installed"
+      continue
     fi
+    if (( DRY_RUN )); then
+      run brew install "$pkg"
+    elif brew install "$pkg" >/dev/null 2>&1; then
+      ok "installed $pkg"
+    else
+      warn "could not install formula: $pkg"
+      SKIPPED+=("$pkg")
+    fi
+  done
+}
+
+brew_install_cask() {
+  local pkg
+  for pkg in "$@"; do
+    if brew_cask_installed "$pkg"; then
+      info "$pkg already installed"
+      continue
+    fi
+    if (( DRY_RUN )); then
+      run brew install --cask "$pkg"
+    elif brew install --cask "$pkg" >/dev/null 2>&1; then
+      ok "installed $pkg"
+    else
+      warn "could not install cask: $pkg"
+      SKIPPED+=("cask:$pkg")
+    fi
+  done
+}
+
+#------------
+# Modules
+#------------
+
+# --- system ---------------------------------------------------------------
+# coreutils/gnu-sed give the GNU behaviour the shell functions expect.
+BREW_FORMULAE=(
+  # shell
+  zsh zsh-autosuggestions zsh-syntax-highlighting powerlevel10k
+  # editors and multiplexers
+  vim neovim tmux
+  # core CLI
+  git curl wget jq gnupg lsof coreutils gnu-sed findutils grep
+  ripgrep fd bat lsd duf ncdu htop tree
+  # modern shell workflow
+  fzf zoxide atuin git-delta gh pipx duti
+  # fun
+  fortune cowsay
+  # misc
+  imagemagick mysql-client node kubectl
+)
+
+module_system() {
+  header "Homebrew formulae"
+  brew_install "${BREW_FORMULAE[@]}"
+  run mkdir -p "$HOME/.local/bin"
+}
+
+# --- upgrade --------------------------------------------------------------
+module_upgrade() {
+  header "Updating Homebrew"
+  run brew update
+  run brew upgrade
+  run brew cleanup -s
+  run brew autoremove
+}
+
+# --- git ------------------------------------------------------------------
+module_git() {
+  header "Git configuration"
+  if have delta; then
+    run git config --global core.pager delta
+    run git config --global interactive.diffFilter 'delta --color-only'
+    run git config --global delta.navigate true
+    run git config --global delta.line-numbers true
+    run git config --global merge.conflictstyle zdiff3
+    run git config --global diff.colorMoved default
+    ok "delta configured as git pager"
+  else
+    warn "git-delta not installed, skipping pager setup"
+  fi
+  run git config --global pull.ff only
+  run git config --global init.defaultBranch main
+  run git config --global rebase.autoStash true
+
+  if have gh && ! gh auth status >/dev/null 2>&1; then
+    warn "gh installed but not authenticated — run: gh auth login"
   fi
 }
 
-function install_cli_apps() {
-  header "Installing CLI tools"
-  brew install bat
-  brew install lsd
-  brew install git
-  brew install vim
-  brew install neovim
-  brew install tmux
-  brew install htop
-  brew install ncdu
-  brew install curl
-  brew install wget
-  brew install fortune
-  brew install cowsay
-  brew install mysql-client
-}
+# --- fonts ----------------------------------------------------------------
+# The homebrew/cask-fonts tap was merged into homebrew/cask in 2024; tapping it
+# now fails, so install the casks directly.
+module_fonts() {
+  header "Fonts"
+  brew_install_cask font-hack-nerd-font font-meslo-lg-nerd-font font-fira-code-nerd-font
 
-function install_fonts() {
-  header "Installing fonts"
-
-  # Nerd Fonts
-  brew tap homebrew/cask-fonts
-  brew install --cask font-meslo-lg-nerd-font
-  brew install --cask font-hack-nerd-font
-  brew install --cask font-fira-code-nerd-font
-
-  # Copy local fonts if exist
-  if [ -d "./fonts" ]; then
-    cp -r ./fonts/* ~/Library/Fonts/
+  if [[ -d ./fonts ]]; then
+    run mkdir -p "$HOME/Library/Fonts"
+    run cp -r ./fonts/. "$HOME/Library/Fonts"/
+    ok "repository fonts copied into ~/Library/Fonts"
   fi
 }
 
-function install_zsh() {
-  header "ZSH Configuration"
+# --- zsh ------------------------------------------------------------------
+# No Oh My Zsh: the .zshrc in this repository loads Powerlevel10k and the
+# plugins itself, so installing OMZ would only add an unused framework whose
+# paths the .zshrc never looks at.
+module_zsh() {
+  header "ZSH configuration"
 
-  # Copy .zshrc if exists
-  if [ -f ".zshrc" ]; then
-    cp .zshrc ~
+  if [[ -f "$HOME/.zshrc" ]] && ! diff -q ./.zshrc "$HOME/.zshrc" >/dev/null 2>&1; then
+    local backup
+    backup="$HOME/.zshrc.bak.$(date +%F-%H%M%S)"
+    run cp "$HOME/.zshrc" "$backup"
+    warn "existing ~/.zshrc backed up to $backup"
   fi
+  run cp ./.zshrc "$HOME/.zshrc"
+  [[ -f ./.p10k.zsh ]] && run cp ./.p10k.zsh "$HOME/.p10k.zsh"
+  [[ -f ./.tmux.conf ]] && run cp ./.tmux.conf "$HOME/.tmux.conf"
+  [[ -f ./.tmux.conf.local ]] && run cp ./.tmux.conf.local "$HOME/.tmux.conf.local"
 
-  # Install Oh My Zsh if not installed
-  if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  # Same layout as on Linux, but under $HOME because /usr/share is read-only.
+  run mkdir -p "$HOME/.config/zsh/functions"
+  run cp ./zsh/functions/*.zsh "$HOME/.config/zsh/functions/"
+  ok "shell functions installed into ~/.config/zsh/functions"
+
+  # zsh-sudo and zsh-chuck have no Homebrew formula, so they come from here.
+  # autosuggestions and syntax-highlighting come from the formulae instead.
+  run mkdir -p "$HOME/.local/share/zsh/plugins"
+  local p
+  for p in zsh-sudo zsh-chuck; do
+    [[ -d "./zsh/plugins/$p" ]] && run cp -r "./zsh/plugins/$p" "$HOME/.local/share/zsh/plugins/"
+  done
+  ok "bundled plugins installed into ~/.local/share/zsh/plugins"
+
+  local zsh_bin="$BREW_PREFIX/bin/zsh"
+  [[ -x "$zsh_bin" ]] || zsh_bin=/bin/zsh
+  if [[ "${SHELL:-}" != "$zsh_bin" ]]; then
+    if ! grep -qx "$zsh_bin" /etc/shells 2>/dev/null; then
+      (( DRY_RUN )) || echo "$zsh_bin" | sudo tee -a /etc/shells >/dev/null
+    fi
+    run chsh -s "$zsh_bin"
+    ok "default shell set to $zsh_bin"
+  else
+    info "default shell already $zsh_bin"
   fi
-
-  # Install zsh-autosuggestions
-  git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions 2>/dev/null || true
-
-  # Install zsh-syntax-highlighting
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 2>/dev/null || true
-
-  # Change shell to zsh
-  if [ "$SHELL" != "$(which zsh)" ]; then
-    chsh -s "$(which zsh)"
-  fi
-
-  header "Done"
 }
 
-function install_powerlevel10k() {
-  header "PowerLevel10k"
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k 2>/dev/null || true
+# --- shell tools ----------------------------------------------------------
+module_shelltools() {
+  header "Shell tools (fzf / zoxide / atuin)"
+  brew_install fzf zoxide atuin
+
+  # Homebrew's fzf is always recent enough for the built-in integration, so the
+  # ~/.fzf checkout the old script cloned is dead weight.
+  if [[ -d "$HOME/.fzf" ]] && have fzf && fzf --zsh >/dev/null 2>&1; then
+    run rm -rf "$HOME/.fzf" "$HOME/.fzf.zsh"
+    ok "removed the legacy ~/.fzf checkout"
+  fi
+  have fzf   && ok "fzf $(fzf --version | awk '{print $1}') with built-in shell integration"
+  have atuin && ok "atuin ready — run 'atuin register' or 'atuin login' to sync history"
 }
 
-function install_fzf() {
-  header "FZF"
-  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf 2>/dev/null || true
-  ~/.fzf/install --key-bindings --completion --all --no-bash
-}
-
-function install_kitty() {
+# --- kitty ----------------------------------------------------------------
+module_kitty() {
   header "Kitty"
-  brew install --cask kitty
-
-  # Copy kitty config if exists
-  if [ -d "./apps/kitty" ]; then
-    mkdir -p ~/.config/kitty
-    cp ./apps/kitty/* ~/.config/kitty/
+  brew_install_cask kitty
+  run mkdir -p "$HOME/.config/kitty"
+  if run cp -r ./apps/kitty/. "$HOME/.config/kitty"/; then
+    ok "kitty config copied"
+  else
+    err "could not copy the kitty config"
   fi
 }
 
-function install_sublime() {
-  header "Sublime"
-  brew install --cask sublime-text
+# --- default terminal -----------------------------------------------------
+# macOS has no global "default terminal" setting the way GNOME does; what can
+# be changed is which application opens shell scripts.
+module_terminal() {
+  header "Default terminal"
+  if ! brew_cask_installed kitty && [[ ! -d /Applications/kitty.app ]]; then
+    err "kitty is not installed; run ./install_mac.sh kitty first"
+    return
+  fi
+  if have duti; then
+    run duti -s net.kovidgoyal.kitty com.apple.terminal.shell-script all
+    ok "kitty registered as the handler for shell scripts"
+  else
+    warn "duti not installed; cannot change the shell-script handler"
+  fi
+  info "macOS has no global default-terminal setting: pin kitty to the Dock manually"
 }
 
-function install_docker() {
-  header "Docker"
-  brew install docker
-  brew install docker-compose
-  brew install --cask docker
+# --- LLM CLIs -------------------------------------------------------------
+module_llm() {
+  header "LLM CLIs"
+  have node || brew_install node
+
+  if have claude; then
+    ok "Claude Code $(claude --version 2>/dev/null | awk '{print $1}') already installed"
+  else
+    info "installing Claude Code"
+    (( DRY_RUN )) || curl -fsSL https://claude.ai/install.sh | bash
+  fi
+
+  if have codex; then
+    ok "Codex $(codex --version 2>/dev/null | awk '{print $NF}') already installed"
+  elif have npm; then
+    run npm install -g @openai/codex
+  else
+    warn "npm missing, skipping Codex"
+  fi
+}
+
+# --- desktop applications -------------------------------------------------
+# `docker` is the Docker Desktop cask; the CLI comes with it, so there is no
+# separate docker formula here.
+BREW_CASKS=(
+  brave-browser bitwarden spotify telegram vlc slack thunderbird
+  visual-studio-code sublime-text docker postman rectangle alt-tab
+  powershell microsoft-teams
+)
+
+module_apps() {
+  header "Desktop applications"
+  brew_install_cask "${BREW_CASKS[@]}"
 }
 
 #------------
-# Installers
+# Driver
 #------------
 
-# Check/Install Homebrew
-header "Checking Homebrew"
-check_homebrew
-echo ""
-echo ""
+MODULES=(system upgrade git fonts zsh shelltools kitty terminal llm apps)
 
-# Update Homebrew
-header "Updating Homebrew"
-brew update
-brew upgrade
-echo ""
-echo ""
+usage() {
+  cat <<EOF
+Usage: ./install_mac.sh [--dry-run] [module ...]
 
-# Install requirements
-header "Installing requirements"
-brew install fonts-powerline 2>/dev/null || true
-brew install imagemagick
-echo ""
-echo ""
+Modules (all of them run when none is given):
+  system      Homebrew formulae (shell, CLI tools, GNU coreutils)
+  upgrade     brew update / upgrade / cleanup
+  git         global git config (delta pager, sane defaults)
+  fonts       Nerd Font casks and the fonts bundled here
+  zsh         .zshrc, .p10k.zsh, tmux config, shell functions and plugins
+  shelltools  fzf, zoxide and atuin
+  kitty       kitty cask + config
+  terminal    register kitty as the shell-script handler
+  llm         Node.js and the AI CLIs
+  apps        desktop application casks
 
-# Install Docker
-install_docker
+Options:
+  --dry-run   print the commands instead of running them
+  --list      list module names
+  -h, --help  this help
 
-# Install Sublime and configure
-install_sublime
+Powerlevel10k comes from its Homebrew formula; no Oh My Zsh is installed
+because the .zshrc in this repository loads everything itself.
+EOF
+}
 
-# Install Kitty and configure
-install_kitty
+main() {
+  local requested=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --dry-run) DRY_RUN=1 ;;
+      --list)    printf '%s\n' "${MODULES[@]}"; exit 0 ;;
+      -h|--help) usage; exit 0 ;;
+      -*)        err "Unknown option: $1"; usage; exit 1 ;;
+      *)         requested+=("$1") ;;
+    esac
+    shift
+  done
 
-# Install CLI apps
-install_cli_apps
+  require_macos
+  require_not_root
+  ensure_brew
 
-# Install fonts
-install_fonts
+  [[ ${#requested[@]} -eq 0 ]] && requested=("${MODULES[@]}")
 
-# Install ZSH
-install_zsh
+  local m
+  for m in "${requested[@]}"; do
+    if [[ " ${MODULES[*]} " != *" $m "* ]]; then
+      err "Unknown module: $m"
+      continue
+    fi
+    "module_$m"
+  done
 
-# Install PowerLevel10k
-install_powerlevel10k
+  header "Summary"
+  info "macOS        : $(sw_vers -productVersion 2>/dev/null)"
+  info "Homebrew     : $BREW_PREFIX"
+  info "Modules      : ${requested[*]}"
+  [[ ${#SKIPPED[@]} -gt 0 ]] && warn "Not installed: ${SKIPPED[*]}"
+  if [[ ${#FAILURES[@]} -gt 0 ]]; then
+    printf '  %sErrors:%s\n' "$red" "$reset"
+    printf '    - %s\n' "${FAILURES[@]}"
+  else
+    ok "Finished without errors"
+  fi
 
-# Install FZF
-install_fzf
+  echo
+  header "Script by: Carlos Perez Andrade"
+  have fortune && have cowsay && fortune | cowsay
+}
 
-# Install GUI apps
-header "Installing GUI Applications"
-brew install --cask brave-browser
-brew install --cask bitwarden
-brew install --cask spotify
-brew install --cask telegram
-brew install --cask vlc
-brew install --cask rectangle
-brew install --cask alt-tab
-
-# Install development tools
-header "Installing Development Tools"
-brew install node
-brew install python@3.11
-brew install kubectl
-brew install --cask postman
-brew install --cask powershell
-
-# Cleanup
-header "Cleaning up"
-brew cleanup
-brew autoremove
-
-clear
-header "Script by: Carlos Perez Andrade"
-echo
-fortune | cowsay 2>/dev/null
+main "$@"

@@ -5,8 +5,21 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-for _p10k in /usr/share/powerlevel10k /usr/bin/powerlevel10k "$HOME/powerlevel10k"; do
-  [[ -r "$_p10k/powerlevel10k.zsh-theme" ]] && source "$_p10k/powerlevel10k.zsh-theme" && break
+# Homebrew prefix, resolved without shelling out to `brew` (which is slow and
+# is not on PATH yet at this point).
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  BREW_PREFIX=/opt/homebrew          # Apple Silicon
+elif [[ -x /usr/local/bin/brew ]]; then
+  BREW_PREFIX=/usr/local             # Intel Macs
+else
+  BREW_PREFIX=""
+fi
+[[ -n "$BREW_PREFIX" ]] && eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+
+for _p10k in "${BREW_PREFIX:+$BREW_PREFIX/share/powerlevel10k}" \
+             /usr/share/powerlevel10k /usr/bin/powerlevel10k "$HOME/powerlevel10k"; do
+  [[ -n "$_p10k" && -r "$_p10k/powerlevel10k.zsh-theme" ]] &&
+    source "$_p10k/powerlevel10k.zsh-theme" && break
 done
 unset _p10k
 
@@ -53,9 +66,17 @@ elif (( $+commands[batcat] )); then
 fi
 alias cant='/bin/cat'
 
-alias ccc="sed 's/ *$//' | xclip -sel clip"
-alias top="/usr/bin/htop"
-alias egrep='/usr/bin/egrep --color=always'
+# Copy stdin to the clipboard, whichever clipboard this machine has
+if (( $+commands[pbcopy] )); then
+  alias ccc="sed 's/ *$//' | pbcopy"
+elif (( $+commands[xclip] )); then
+  alias ccc="sed 's/ *$//' | xclip -sel clip"
+elif (( $+commands[wl-copy] )); then
+  alias ccc="sed 's/ *$//' | wl-copy"
+fi
+
+(( $+commands[htop] )) && alias top='htop'
+alias egrep='command grep -E --color=always'
 alias vi='nvim'
 alias k='kubectl'
 alias d='docker'
@@ -88,15 +109,26 @@ fi
 # Plugins (syntax-highlighting must stay last)
 #------------------------------------------------------------------------------
 
-for _plugin in \
-  /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh \
-  /usr/share/zsh/plugins/zsh-sudo/sudo.plugin.zsh \
-  /usr/share/zsh/plugins/zsh-chuck/chucknorris.plugin.zsh \
-  /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# zsh-sudo and zsh-chuck ship with this repo; autosuggestions and
+# syntax-highlighting come from the distribution or from Homebrew.
+ZSH_PLUGIN_DIRS=(/usr/share/zsh/plugins "$HOME/.local/share/zsh/plugins")
+for _name in zsh-autosuggestions/zsh-autosuggestions.zsh \
+             zsh-sudo/sudo.plugin.zsh \
+             zsh-chuck/chucknorris.plugin.zsh \
+             zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 do
-  [[ -r "$_plugin" ]] && source "$_plugin"
+  for _dir in "${ZSH_PLUGIN_DIRS[@]}"; do
+    [[ -r "$_dir/$_name" ]] && { source "$_dir/$_name"; break }
+  done
 done
-unset _plugin
+# Homebrew keeps them one level up, without the plugin-name directory
+if [[ -n "$BREW_PREFIX" ]]; then
+  for _plugin in "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+                 "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"; do
+    [[ -r "$_plugin" ]] && source "$_plugin"
+  done
+fi
+unset _name _dir _plugin
 
 #------------------------------------------------------------------------------
 # Own functions (installed from the repo into ~/.config/zsh/functions)
@@ -130,8 +162,13 @@ zstyle ':completion:*' completer _expand _complete _correct _approximate
 zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' menu select=2
-eval "$(dircolors -b)"
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+# dircolors is GNU-only; macOS gets it from coreutils as gdircolors
+if (( $+commands[dircolors] )); then
+  eval "$(dircolors -b)"
+elif (( $+commands[gdircolors] )); then
+  eval "$(gdircolors -b)"
+fi
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS:-}
 zstyle ':completion:*' list-colors ''
 zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
 zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'

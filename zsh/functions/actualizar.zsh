@@ -183,6 +183,51 @@ _npm_upgrade() {
   fi
 }
 
+# Never send device reports to the LVFS: they describe this machine's hardware.
+# The prompt defaults to yes, so turn it off in the daemon configuration once.
+_fwupd_disable_reports() {
+  local conf=/etc/fwupd/fwupd.conf
+  [[ -f "$conf" ]] || return
+  if sudo grep -qE '^\s*UploadReport\s*=\s*false' "$conf" 2>/dev/null; then
+    return
+  fi
+  if sudo grep -qE '^\s*#?\s*UploadReport\s*=' "$conf" 2>/dev/null; then
+    sudo sed -i -E 's|^\s*#?\s*UploadReport\s*=.*|UploadReport=false|' "$conf"
+  else
+    sudo sed -i '0,/^\[fwupd\]/s//[fwupd]\nUploadReport=false/' "$conf"
+  fi
+  if sudo grep -qE '^\s*UploadReport\s*=\s*false' "$conf" 2>/dev/null; then
+    echo "  Device report uploads disabled in $conf"
+    sudo systemctl restart fwupd 2>/dev/null
+  else
+    echo "  Could not disable report uploads in $conf; answering 'no' at the prompt"
+  fi
+}
+
+_pipx_upgrade() {
+  local pipx_home="${PIPX_HOME:-$HOME/.local/share/pipx}"
+  local intruso
+
+  # A single `sudo pipx install` in the past leaves root-owned files behind,
+  # and every later run dies clearing its trash directory.
+  if [[ -d "$pipx_home" ]]; then
+    intruso=$(find "$pipx_home" ! -user "$(id -un)" -print -quit 2>/dev/null)
+    if [[ -n "$intruso" ]]; then
+      echo "  Found root-owned files in $pipx_home (left by a sudo pipx run)"
+      if sudo chown -R "$(id -un):$(id -gn)" "$pipx_home"; then
+        echo "  Ownership fixed"
+      else
+        echo "  Could not fix ownership; skipping pipx"
+        return
+      fi
+    fi
+    # The trash directory is disposable; a leftover here is what breaks startup.
+    /bin/rm -rf "$pipx_home/trash" 2>/dev/null
+  fi
+
+  pipx upgrade-all || echo "  pipx returned an error; run 'pipx list' to check the installs"
+}
+
 # CLI that ships its own installer script and is versioned on the npm registry.
 _script_cli_upgrade() {
   local bin=$1 label=$2 registry_pkg=$3 installer=$4
@@ -216,33 +261,68 @@ _script_cli_upgrade() {
 function actualizar() {
   clear
 
-  seccion "Updating the repositories"
-  sudo apt update
+  local is_macos=0
+  [[ "$(uname -s)" == "Darwin" ]] && is_macos=1
 
-  seccion "Doing a full upgrade"
-  sudo apt -y full-upgrade
-  sudo apt list --upgradable 2>/dev/null | awk -F/ '/upgradable/ {print $1}' | xargs -r sudo apt -y --allow-change-held-packages install
+  if (( is_macos )); then
+    if command -v brew &> /dev/null; then
+      seccion "Updating Homebrew"
+      brew update
 
-  if command -v snap &> /dev/null; then
-    seccion "Updating SNAP Installs"
-    sudo snap refresh
+      seccion "Upgrading formulae and casks"
+      brew upgrade
+      brew upgrade --cask --greedy
+
+      seccion "Cleaning up Homebrew"
+      brew cleanup -s
+      brew autoremove
+
+      seccion "Checking Homebrew health"
+      brew doctor 2>&1 | head -n 20
+    else
+      seccion "Homebrew is not installed"
+    fi
+
+    if command -v mas &> /dev/null; then
+      seccion "Updating App Store apps"
+      mas upgrade
+    fi
+
+    seccion "Checking macOS updates"
+    softwareupdate -l 2>&1 | tail -n 10
   else
-    seccion "Snap is not installed"
+    seccion "Updating the repositories"
+    sudo apt update
+
+    seccion "Doing a full upgrade"
+    sudo apt -y full-upgrade
+    sudo apt list --upgradable 2>/dev/null | awk -F/ '/upgradable/ {print $1}' | xargs -r sudo apt -y --allow-change-held-packages install
+
+    if command -v snap &> /dev/null; then
+      seccion "Updating SNAP Installs"
+      sudo snap refresh
+    else
+      seccion "Snap is not installed"
+    fi
+
+    if command -v flatpak &> /dev/null; then
+      seccion "Updating Flatpak Apps"
+      flatpak update -y
+      flatpak uninstall --unused -y
+    else
+      seccion "Flatpak is not installed"
+    fi
   fi
 
-  if command -v flatpak &> /dev/null; then
-    seccion "Updating Flatpak Apps"
-    flatpak update -y
-    flatpak uninstall --unused -y
-  else
-    seccion "Flatpak is not installed"
+  # Kitty comes from Homebrew on macOS, so only upgrade it from upstream when
+  # it was installed by its own installer.
+  if (( ! is_macos )); then
+    seccion "Updating Kitty Terminal"
+    _kitty_upgrade
+
+    seccion "Updating git-based tools"
+    _git_repo_upgrade /usr/share/powerlevel10k "Powerlevel10k"
   fi
-
-  seccion "Updating Kitty Terminal"
-  _kitty_upgrade
-
-  seccion "Updating git-based tools"
-  _git_repo_upgrade /usr/share/powerlevel10k "Powerlevel10k"
 
   if command -v gh &> /dev/null; then
     seccion "Updating gh extensions"
@@ -261,29 +341,43 @@ function actualizar() {
 
   if command -v fwupdmgr &> /dev/null; then
     seccion "Updating firmware"
+    _fwupd_disable_reports
     sudo fwupdmgr refresh --force >/dev/null 2>&1
-    sudo fwupdmgr get-updates 2>/dev/null && sudo fwupdmgr update -y 2>/dev/null
+    # Answer "n" explicitly: the report question defaults to YES, so feeding it
+    # /dev/null would upload a device report. --no-reboot-check keeps fwupd from
+    # asking to reboot in the middle of the run.
+    if sudo fwupdmgr get-updates </dev/null 2>/dev/null; then
+      printf 'n\n' | sudo fwupdmgr update -y --no-reboot-check 2>/dev/null
+    fi
   fi
 
   if command -v pipx &> /dev/null; then
     seccion "Updating pipx packages"
-    pipx upgrade-all
+    _pipx_upgrade
   fi
 
   seccion "Updating LLM Tools"
   _script_cli_upgrade claude "Claude Code" "@anthropic-ai/claude-code" "https://claude.ai/install.sh"
   _npm_upgrade @openai/codex "Codex"
 
-  seccion "Updating Trezor Suite AppImage"
-  _trezor_suite_upgrade
+  if (( ! is_macos )); then
+    seccion "Updating Trezor Suite AppImage"
+    _trezor_suite_upgrade
 
-  seccion "Removing old packages and/or fixing broken packages"
-  sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+    seccion "Removing old packages and/or fixing broken packages"
+    sudo apt -y autoremove || sudo apt --fix-broken install && sudo apt -y autoremove
+  fi
 
   imprimir_linea
   imprimir_linea
 
-  if [ -f /var/run/reboot-required ]; then
+  if (( is_macos )); then
+    echo
+    centrar_texto "***********************"
+    centrar_texto "*        Done         *"
+    centrar_texto "***********************"
+    echo
+  elif [ -f /var/run/reboot-required ]; then
       echo
       centrar_texto "*******************"
       centrar_texto "* Reboot Required *"

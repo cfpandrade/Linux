@@ -93,11 +93,32 @@ sobre el `.zshrc` y las funciones, y ejecuta `./install.sh --dry-run`.
 
 ## macOS
 
-`install_mac.sh` cubre macOS vía Homebrew, pero **está desactualizado respecto
-al resto del repo**: instala Oh My Zsh y Powerlevel10k en rutas que el `.zshrc`
-actual no busca, no copia `zsh/functions/`, y la función `actualizar` es
-específica de apt/snap/flatpak. Sirve para instalar las aplicaciones; la
-configuración del shell hay que rematarla a mano.
+`install_mac.sh` es el equivalente vía Homebrew, con la misma estructura
+modular:
+
+```bash
+./install_mac.sh                # todo
+./install_mac.sh --dry-run
+./install_mac.sh zsh kitty llm
+```
+
+| Módulo | Qué hace |
+|--------|----------|
+| `system` | Fórmulas de brew: shell, CLI, coreutils/gnu-sed/grep GNU |
+| `upgrade` | `brew update` + `upgrade` + `cleanup` + `autoremove` |
+| `git` | Misma config global que en Linux |
+| `fonts` | Casks de Nerd Fonts + las fuentes del repo en `~/Library/Fonts` |
+| `zsh` | `.zshrc`, funciones y los plugins propios en `~/.local/share/zsh/plugins` |
+| `shelltools` | fzf, zoxide, atuin |
+| `kitty` | Cask + configuración |
+| `terminal` | Registra kitty como handler de shell scripts (vía `duti`) |
+| `llm` | Node y los CLIs de IA |
+| `apps` | Casks de escritorio |
+
+No instala Oh My Zsh: el `.zshrc` carga Powerlevel10k y los plugins por su
+cuenta, y detecta el prefijo de Homebrew (`/opt/homebrew` o `/usr/local`) para
+encontrarlos. `actualizar` detecta macOS y usa brew, `mas` y `softwareupdate`
+en lugar de apt/snap/flatpak.
 
 ## Nota
 
