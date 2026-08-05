@@ -225,6 +225,26 @@ _pipx_upgrade() {
     /bin/rm -rf "$pipx_home/trash" 2>/dev/null
   fi
 
+  # A distribution upgrade removes the old interpreter and every venv built
+  # against it keeps a dangling bin/python, which makes upgrade-all abort on the
+  # first one. Rebuild those against the current python before upgrading.
+  local venv nombre roto=()
+  for venv in "$pipx_home"/venvs/*(N/); do
+    nombre=${venv:t}
+    [[ -e "$venv/bin/python" ]] || roto+=("$nombre")
+  done
+
+  if (( ${#roto} )); then
+    echo "  Virtualenvs built against a removed interpreter: ${roto[*]}"
+    for nombre in "${roto[@]}"; do
+      if pipx reinstall "$nombre" >/dev/null 2>&1; then
+        echo "  Rebuilt $nombre"
+      else
+        echo "  Could not rebuild $nombre — reinstall it by hand or drop it with 'pipx uninstall $nombre'"
+      fi
+    done
+  fi
+
   pipx upgrade-all || echo "  pipx returned an error; run 'pipx list' to check the installs"
 }
 

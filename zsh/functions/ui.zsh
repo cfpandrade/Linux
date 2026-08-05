@@ -15,7 +15,10 @@ _ancho_terminal() {
 }
 
 imprimir_linea() {
-  local longitud=$(_ancho_terminal)
+  # One column short of the full width: a line that fills the terminal exactly
+  # triggers the auto-wrap edge case and shows up as two rows.
+  local longitud=$(( $(_ancho_terminal) - 1 ))
+  (( longitud < 1 )) && longitud=1
   local linea=$(printf "%*s" "$longitud" | tr ' ' '-')
   printf "\e[31m%s\e[0m\n" "$linea"
 }
