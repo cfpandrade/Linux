@@ -1,35 +1,94 @@
-# Installation script for Linux systems
+# Linux workstation setup
 
-This script automates the installation and configuration process of various tools and applications on a Linux system.
+Instalador y dotfiles para dejar una máquina Linux lista: zsh + Powerlevel10k,
+kitty, fuentes Nerd, herramientas de CLI, apps de escritorio y CLIs de IA.
 
-## Requirements
-- A Linux system with apt package manager installed
-- Administrative privileges to run the script (e.g. sudo)
-- The following tools and packages need to be pre-installed:
-  - bash
-  - git
+Probado en Ubuntu 26.04. Detecta `apt`, `dnf`, `yum` y `pacman`, así que en
+Debian/Fedora/RHEL/Arch debería funcionar en modo "mejor esfuerzo".
 
-## Usage
-To use the script, follow these steps:
-1. Clone the repository containing the script and required files:
+## Requisitos
+
+- `bash`, `git`, `curl` y `sudo`
+- Ejecutarlo **como tu usuario normal**, no con `sudo` (el script pide sudo
+  donde hace falta y necesita tu `$HOME` real).
+
+## Uso
+
+```bash
 git clone https://github.com/cfpandrade/Linux
-2. Navigate to the repository directory:
 cd Linux
-3. Run the script as an administrator:
-sudo ./install.sh
+./install.sh                  # todo
+./install.sh --dry-run        # enseña lo que haría, sin tocar nada
+./install.sh zsh kitty llm    # solo algunos módulos
+./install.sh --list           # lista los módulos
+```
 
-## Features
-- Updates and upgrades the system
-- Installs required packages and tools (e.g. zsh, git, vim, tmux)
-- Installs local applications in the ~/Linux/apps directory
-- Installs fonts in the ~/.fonts directory
-- Configures zsh and sets it as the default shell for the current user and root
-- Installs the powerlevel10k theme for zsh
-- Installs SNAP applications (e.g. searchsploit, mysql-shell)
-- Installs the fzf fuzzy finder tool
-- Displays a fortune message after the script finishes executing
+## Módulos
 
-## Note
-- The script assumes that the required files (e.g. local applications, fonts, zsh configuration files) are in the same directory as the script.
-- The script has been tested on Ubuntu 22.02 and Parrot OS and may need modifications to work on other systems.
-- Use the script at your own risk, as it modifies the system configuration.
+| Módulo       | Qué hace |
+|--------------|----------|
+| `system`     | Paquetes base de la distro (zsh, git, ripgrep, bat, lsd, duf, boxes, ratbagd…) |
+| `upgrade`    | `update` + `full-upgrade` + `autoremove` |
+| `git`        | Config global: `delta` como pager, `pull.ff only`, `zdiff3`… |
+| `fonts`      | Hack Nerd Fonts en `~/.local/share/fonts` |
+| `zsh`        | `.zshrc`, `.p10k.zsh`, tmux, funciones y plugins de zsh |
+| `p10k`       | Powerlevel10k en `/usr/share/powerlevel10k` |
+| `shelltools` | fzf, zoxide y atuin |
+| `kitty`      | Última versión desde el instalador oficial + configuración |
+| `llm`        | Node.js y los CLIs de IA |
+| `lazydocker` | lazydocker |
+| `snap`       | Aplicaciones de escritorio vía snap |
+| `flatpak`    | flatpak + remoto flathub |
+
+Módulo opcional, **fuera** de la ejecución por defecto:
+
+| Módulo   | Qué hace |
+|----------|----------|
+| `docker` | Sustituye el docker de la distro por Docker CE del repo oficial. Elimina `docker.io`/`containerd` y para los contenedores en marcha, así que pide confirmación. Solo tiene sentido si la versión de la distro se queda atrás. |
+
+Todos los módulos son idempotentes: se pueden volver a ejecutar sin romper nada.
+`~/.zshrc` se respalda automáticamente antes de sobrescribirlo.
+
+## Estructura
+
+```
+.zshrc                      configuración del shell (aliases, opciones, integraciones)
+zsh/functions/ui.zsh        imprimir_linea / centrar_texto / seccion
+zsh/functions/actualizar.zsh  la función `actualizar`
+zsh/functions/tools.zsh     ntfy, mkt, checkip, extractPorts, ssht, sshta
+zsh/plugins/                autosuggestions, syntax-highlighting, sudo, chuck
+apps/kitty/                 kitty.conf, color.ini, tar_bar.py
+fonts/                      Hack Nerd Font
+```
+
+Las funciones se instalan en `~/.config/zsh/functions` y el `.zshrc` carga todo
+lo que haya ahí, así que añadir una función nueva es dejar un `.zsh` en esa
+carpeta del repo.
+
+## Atajos de kitty
+
+| Tecla | Acción |
+|-------|--------|
+| `F1` / `F2` | copiar / pegar del portapapeles |
+| `F3` / `F4` | copiar / pegar del buffer `b` |
+| `F5` | volcar la salida del último comando en un panel nuevo |
+| `ctrl+F1`…`ctrl+F5` | envía las F1–F5 reales a la aplicación |
+| `ctrl+shift+o` | abrir URL con hints |
+| `ctrl+shift+z` | alternar layout `stack` |
+
+## Mantenimiento
+
+Una vez instalado, la función `actualizar` mantiene el sistema al día: apt,
+snap, flatpak, firmware (`fwupd`), pipx, extensiones de `gh`, binarios de cargo,
+kitty, Powerlevel10k, los CLIs de IA y el AppImage de Trezor Suite (con
+verificación GPG + SHA-512).
+
+## CI
+
+`.github/workflows/lint.yml` pasa `shellcheck` sobre los scripts bash, `zsh -n`
+sobre el `.zshrc` y las funciones, y ejecuta `./install.sh --dry-run`.
+
+## Nota
+
+El script modifica la configuración del sistema (shell por defecto, paquetes,
+`/usr/share/zsh`). Úsalo bajo tu propia responsabilidad.
