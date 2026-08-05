@@ -197,6 +197,14 @@ if (( $+commands[fzf] )); then
     source <(fzf --zsh)
   elif [[ -f ~/.fzf.zsh ]]; then
     source ~/.fzf.zsh
+  else
+    # fzf < 0.48 (Ubuntu 22.04/24.04): the distro ships the scripts separately
+    for _f in /usr/share/doc/fzf/examples/key-bindings.zsh \
+              /usr/share/doc/fzf/examples/completion.zsh \
+              /usr/share/fzf/key-bindings.zsh /usr/share/fzf/completion.zsh; do
+      [[ -r "$_f" ]] && source "$_f"
+    done
+    unset _f
   fi
   export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border --info=inline"
   (( $+commands[fd] )) && export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'

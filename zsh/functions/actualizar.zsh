@@ -131,7 +131,7 @@ _kitty_upgrade() {
 
   if [[ -z "$installed" ]]; then
     echo "  Kitty not installed - installing v$latest..."
-    curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+    curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
     echo "  Kitty installed at v$latest"
     return
   fi
@@ -139,7 +139,7 @@ _kitty_upgrade() {
   newest=$(printf "%s\n%s\n" "$installed" "$latest" | sort -V | tail -n 1)
   if [[ "$newest" == "$latest" && "$installed" != "$latest" ]]; then
     echo "  Kitty v$installed, upgrading to v$latest..."
-    curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+    curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
     echo "  Kitty upgraded to v$latest"
   else
     echo "  Kitty v$installed, no upgrade needed"

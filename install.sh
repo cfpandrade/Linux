@@ -18,6 +18,12 @@ DRY_RUN=0
 FAILURES=()
 SKIPPED=()
 
+# Not every environment exports these (cron, docker exec, su without -l), and
+# `set -u` would abort on the first use.
+USER="${USER:-$(id -un)}"
+SHELL="${SHELL:-$(getent passwd "$USER" | cut -d: -f7)}"
+HOME="${HOME:-$(getent passwd "$USER" | cut -d: -f6)}"
+
 #------------
 # Output helpers
 #------------
@@ -123,7 +129,7 @@ pkg_install() {
   [[ ${#missing[@]} -eq 0 ]] && { info "all packages already present"; return 0; }
 
   for pkg in "${missing[@]}"; do
-    local cmd
+    local cmd output
     case "$PKG" in
       apt)    cmd=(sudo apt-get install -y -qq "$pkg") ;;
       dnf)    cmd=(sudo dnf -y install "$pkg") ;;
@@ -132,11 +138,23 @@ pkg_install() {
     esac
     if (( DRY_RUN )); then
       run "${cmd[@]}"
-    elif "${cmd[@]}" >/dev/null 2>&1; then
+      continue
+    fi
+    if output=$("${cmd[@]}" 2>&1); then
       ok "installed $pkg"
-    else
+    # Tell "this distribution has no such package" apart from a real failure
+    # (no sudo, held packages, broken dependencies, no network).
+    elif grep -qiE 'unable to locate package|no match for argument|has no installation candidate|target not found' <<<"$output"; then
       warn "not available: $pkg"
       SKIPPED+=("$pkg")
+    else
+      err "failed to install $pkg: $(head -n1 <<<"$output")"
+      # A failure that is not "package missing" will hit every remaining
+      # package too, so stop hammering the package manager.
+      if grep -qiE 'sudo:|permission denied|could not get lock' <<<"$output"; then
+        err "aborting package installation"
+        return 1
+      fi
     fi
   done
 }
@@ -443,12 +461,12 @@ module_kitty() {
     warn "could not query the latest kitty release"
   elif [[ -z "$installed" ]]; then
     info "installing kitty v$latest"
-    (( DRY_RUN )) || curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+    (( DRY_RUN )) || curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
   else
     newest=$(printf '%s\n%s\n' "$installed" "$latest" | sort -V | tail -n1)
     if [[ "$newest" == "$latest" && "$installed" != "$latest" ]]; then
       info "upgrading kitty v$installed -> v$latest"
-      (( DRY_RUN )) || curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
+      (( DRY_RUN )) || curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin launch=n
     else
       ok "kitty v$installed is current"
     fi
