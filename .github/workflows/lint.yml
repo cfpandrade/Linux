@@ -16,7 +16,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
 
       - name: Check bash scripts
-        run: shellcheck --severity=warning install.sh install_multiOS.sh
+        run: shellcheck --severity=warning install.sh install_mac.sh
 
   zsh-syntax:
     runs-on: ubuntu-latest

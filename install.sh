@@ -647,15 +647,30 @@ module_lazydocker() {
 }
 
 # --- snap -----------------------------------------------------------------
-SNAP_CLASSIC=(code sublime-text powershell waveterm)
-SNAP_STRICT=(bitwarden brave dog kubectl mysql-shell onenote-desktop procs
-             searchsploit slack spotify storage-explorer teams-for-linux
-             telegram-desktop thunderbird vlc wps-office-multilang)
+# The list lives in snap_packages.txt so it can be edited without touching the
+# script. Everything after the `:classic` marker is installed with --classic.
+SNAP_CLASSIC=()
+SNAP_STRICT=()
+
+read_snap_list() {
+  local file=./snap_packages.txt line classic=0
+  SNAP_CLASSIC=(); SNAP_STRICT=()
+  [[ -f "$file" ]] || { warn "snap_packages.txt not found"; return 1; }
+  while IFS= read -r line; do
+    line="${line%%#*}"
+    line="${line//[[:space:]]/}"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" == ":classic" ]]; then classic=1; continue; fi
+    if (( classic )); then SNAP_CLASSIC+=("$line"); else SNAP_STRICT+=("$line"); fi
+  done < "$file"
+}
 
 module_snap() {
   header "Snap applications"
+  read_snap_list || return
   if ! have snap; then
-    pkg_install snapd || { warn "snapd unavailable, skipping"; return; }
+    pkg_install snapd
+    have snap || { warn "snapd unavailable, skipping"; return; }
   fi
   export PATH=/snap/bin:$PATH
 

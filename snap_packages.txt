@@ -1,0 +1,23 @@
+bitwarden
+brave
+dog
+kubectl
+mysql-shell
+onenote-desktop
+procs
+searchsploit
+slack
+spotify
+storage-explorer
+teams-for-linux
+telegram-desktop
+thunderbird
+vlc
+wps-office-multilang
+
+# Snaps que necesitan --classic
+:classic
+code
+powershell
+sublime-text
+waveterm

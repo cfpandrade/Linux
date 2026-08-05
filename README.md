@@ -40,6 +40,9 @@ cd Linux
 | `snap`       | Aplicaciones de escritorio vía snap |
 | `flatpak`    | flatpak + remoto flathub |
 
+La lista de snaps vive en `snap_packages.txt`, editable sin tocar el script; lo
+que va después del marcador `:classic` se instala con `--classic`.
+
 Módulo opcional, **fuera** de la ejecución por defecto:
 
 | Módulo   | Qué hace |
@@ -87,6 +90,14 @@ verificación GPG + SHA-512).
 
 `.github/workflows/lint.yml` pasa `shellcheck` sobre los scripts bash, `zsh -n`
 sobre el `.zshrc` y las funciones, y ejecuta `./install.sh --dry-run`.
+
+## macOS
+
+`install_mac.sh` cubre macOS vía Homebrew, pero **está desactualizado respecto
+al resto del repo**: instala Oh My Zsh y Powerlevel10k en rutas que el `.zshrc`
+actual no busca, no copia `zsh/functions/`, y la función `actualizar` es
+específica de apt/snap/flatpak. Sirve para instalar las aplicaciones; la
+configuración del shell hay que rematarla a mano.
 
 ## Nota
 
