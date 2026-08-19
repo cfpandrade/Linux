@@ -101,9 +101,35 @@ keep_sudo_alive() {
 # Package helpers
 #------------
 
+# apt hands control to dpkg maintainer scripts, and some of them ask questions:
+# wireshark-common (pulled in by termshark) wants to know whether non-root
+# users may capture packets, and needrestart on Ubuntu 22.04+ asks which
+# services to restart. pkg_install captures the output, so those dialogs are
+# never drawn and the install just sits there waiting on stdin forever.
+APT_ENV=(DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true NEEDRESTART_MODE=a)
+# Keep the config files already on disk instead of asking about every diff.
+APT_OPTS=(-o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef)
+
+APT_PRESEEDED=0
+apt_preseed() {
+  [[ "$PKG" == apt ]] || return 0
+  (( APT_PRESEEDED )) && return 0
+  APT_PRESEEDED=1
+  (( DRY_RUN )) && return 0
+  have debconf-set-selections || return 0
+  # Only seed an answer that is not there yet: a '*' in debconf-show means the
+  # question has already been answered and that choice is the user's, not ours.
+  if ! debconf-show wireshark-common 2>/dev/null | grep -q '^\*.*install-setuid'; then
+    # Same answer as the Debian default: capturing stays root-only. To allow it
+    # later: sudo dpkg-reconfigure wireshark-common && sudo usermod -aG wireshark "$USER"
+    echo 'wireshark-common wireshark-common/install-setuid boolean false' \
+      | sudo debconf-set-selections >/dev/null 2>&1 || true
+  fi
+}
+
 pkg_update() {
   case "$PKG" in
-    apt)    run sudo apt-get update -qq ;;
+    apt)    run sudo env "${APT_ENV[@]}" apt-get update -qq ;;
     dnf)    run sudo dnf -y makecache ;;
     yum)    run sudo yum -y makecache ;;
     pacman) run sudo pacman -Sy --noconfirm ;;
@@ -122,6 +148,7 @@ pkg_installed() {
 # whole batch (package names drift a lot between releases).
 pkg_install() {
   local pkg missing=()
+  apt_preseed
   for pkg in "$@"; do
     pkg_installed "$pkg" && continue
     missing+=("$pkg")
@@ -131,7 +158,7 @@ pkg_install() {
   for pkg in "${missing[@]}"; do
     local cmd output
     case "$PKG" in
-      apt)    cmd=(sudo apt-get install -y -qq "$pkg") ;;
+      apt)    cmd=(sudo env "${APT_ENV[@]}" apt-get install -y -qq "${APT_OPTS[@]}" "$pkg") ;;
       dnf)    cmd=(sudo dnf -y install "$pkg") ;;
       yum)    cmd=(sudo yum -y install "$pkg") ;;
       pacman) cmd=(sudo pacman -S --noconfirm --needed "$pkg") ;;
@@ -140,7 +167,7 @@ pkg_install() {
       run "${cmd[@]}"
       continue
     fi
-    if output=$("${cmd[@]}" 2>&1); then
+    if output=$("${cmd[@]}" </dev/null 2>&1); then
       ok "installed $pkg"
     # Tell "this distribution has no such package" apart from a real failure
     # (no sudo, held packages, broken dependencies, no network).
@@ -268,7 +295,7 @@ module_docker() {
       (( DRY_RUN )) || echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $codename stable" \
         | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-      run sudo apt-get update -qq
+      run sudo env "${APT_ENV[@]}" apt-get update -qq
     fi
     pkg_install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     # Fall back to the distro packages if the upstream repo has no build yet
@@ -327,9 +354,11 @@ module_git() {
 module_upgrade() {
   header "Updating and upgrading the system"
   case "$PKG" in
-    apt)     run sudo apt-get update -qq && run sudo apt-get -y full-upgrade
-             run sudo apt-get -y --fix-broken install
-             run sudo apt-get -y autoremove ;;
+    apt)     apt_preseed
+             run sudo env "${APT_ENV[@]}" apt-get update -qq \
+               && run sudo env "${APT_ENV[@]}" apt-get -y "${APT_OPTS[@]}" full-upgrade
+             run sudo env "${APT_ENV[@]}" apt-get -y "${APT_OPTS[@]}" --fix-broken install
+             run sudo env "${APT_ENV[@]}" apt-get -y autoremove ;;
     dnf)     run sudo dnf -y upgrade --refresh && run sudo dnf -y autoremove ;;
     yum)     run sudo yum -y update && run sudo yum -y autoremove ;;
     pacman)  run sudo pacman -Syu --noconfirm ;;
