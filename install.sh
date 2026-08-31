@@ -898,7 +898,7 @@ module_outlook() {
   header "Outlook (web app)"
 
   local browser b
-  for b in google-chrome google-chrome-stable chromium chromium-browser microsoft-edge; do
+  for b in google-chrome google-chrome-stable chromium chromium-browser brave brave-browser microsoft-edge; do
     if have "$b"; then browser=$(command -v "$b"); break; fi
   done
   if [[ -z "${browser:-}" ]]; then
@@ -940,7 +940,7 @@ Icon=$([[ -f "$icon_dir/outlook.svg" ]] && echo outlook || echo internet-mail)
 Terminal=false
 StartupNotify=true
 StartupWMClass=Outlook
-Categories=Network;Email;Office;
+Categories=Network;Email;
 Keywords=email;mail;calendar;outlook;microsoft;office;365;
 DESKTOP
     ok "created $desktop_dir/outlook.desktop -> $OUTLOOK_URL"
