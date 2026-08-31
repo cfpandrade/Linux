@@ -846,15 +846,25 @@ module_chrome() {
           -o /etc/apt/keyrings/google-chrome.asc
         run sudo chmod a+r /etc/apt/keyrings/google-chrome.asc
       fi
-      # The package rewrites its own source list on upgrade; point that copy at
-      # our keyring too, or apt starts warning about an unsigned repo.
-      if [[ ! -f /etc/apt/sources.list.d/google-chrome.list ]]; then
+      # Only a bootstrap entry: as soon as the package is unpacked its postinst
+      # takes the repository over, writing google-chrome.sources (deb822) with
+      # a keyring it ships itself and deleting this file. Adding it back on a
+      # later run would leave apt with the same repo configured twice, so check
+      # for either form.
+      if [[ ! -f /etc/apt/sources.list.d/google-chrome.list &&
+            ! -f /etc/apt/sources.list.d/google-chrome.sources ]]; then
         (( DRY_RUN )) || echo \
           "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.asc] https://dl.google.com/linux/chrome/deb/ stable main" \
           | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
         run sudo env "${APT_ENV[@]}" apt-get update -qq
       fi
       pkg_install google-chrome-stable
+      # Chrome now maintains its own source list and keyring; drop ours so the
+      # two cannot drift apart.
+      if [[ -f /etc/apt/sources.list.d/google-chrome.sources ]]; then
+        run sudo rm -f /etc/apt/keyrings/google-chrome.asc \
+                       /etc/apt/sources.list.d/google-chrome.list
+      fi
       ;;
     dnf|yum)
       if [[ ! -f /etc/yum.repos.d/google-chrome.repo ]]; then
