@@ -65,6 +65,25 @@ run() {
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# Pin a .desktop entry to the GNOME dash. favorite-apps is a plain list of
+# desktop-file names, so appending means rewriting the whole array.
+pin_to_dash() {
+  local entry="$1" current
+  have gsettings || { info "no gsettings; cannot pin $entry"; return 0; }
+  current=$(gsettings get org.gnome.shell favorite-apps 2>/dev/null) || {
+    info "org.gnome.shell not available; cannot pin $entry"; return 0; }
+  if [[ "$current" == *"'$entry'"* ]]; then
+    info "$entry is already pinned to the dash"
+    return 0
+  fi
+  if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
+    run gsettings set org.gnome.shell favorite-apps "['$entry']"
+  else
+    run gsettings set org.gnome.shell favorite-apps "${current%]}, '$entry']"
+  fi
+  ok "$entry pinned to the dash"
+}
+
 #------------
 # Environment detection
 #------------
@@ -800,13 +819,145 @@ module_flatpak() {
   fi
 }
 
+# --- google chrome --------------------------------------------------------
+# Chrome is not in any distribution's repositories: Google ships its own.
+# Adding the repo (instead of dropping in the .deb/.rpm) keeps it updated by
+# the regular package manager.
+module_chrome() {
+  header "Google Chrome"
+
+  if have google-chrome || have google-chrome-stable; then
+    ok "google-chrome $(google-chrome --version 2>/dev/null | awk '{print $NF}') already installed"
+    return
+  fi
+
+  case "$PKG" in
+    apt)
+      # Chrome only publishes an amd64 build for Linux.
+      local arch; arch=$(dpkg --print-architecture)
+      if [[ "$arch" != amd64 ]]; then
+        warn "Google Chrome has no $arch build for Linux; skipping"
+        SKIPPED+=("google-chrome-stable")
+        return
+      fi
+      if [[ ! -f /etc/apt/keyrings/google-chrome.asc ]]; then
+        run sudo install -m 0755 -d /etc/apt/keyrings
+        (( DRY_RUN )) || sudo curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+          -o /etc/apt/keyrings/google-chrome.asc
+        run sudo chmod a+r /etc/apt/keyrings/google-chrome.asc
+      fi
+      # The package rewrites its own source list on upgrade; point that copy at
+      # our keyring too, or apt starts warning about an unsigned repo.
+      if [[ ! -f /etc/apt/sources.list.d/google-chrome.list ]]; then
+        (( DRY_RUN )) || echo \
+          "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.asc] https://dl.google.com/linux/chrome/deb/ stable main" \
+          | sudo tee /etc/apt/sources.list.d/google-chrome.list >/dev/null
+        run sudo env "${APT_ENV[@]}" apt-get update -qq
+      fi
+      pkg_install google-chrome-stable
+      ;;
+    dnf|yum)
+      if [[ ! -f /etc/yum.repos.d/google-chrome.repo ]]; then
+        (( DRY_RUN )) || sudo tee /etc/yum.repos.d/google-chrome.repo >/dev/null <<'REPO'
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+REPO
+        pkg_update
+      fi
+      pkg_install google-chrome-stable
+      ;;
+    pacman)
+      # Not in the official repos; only the AUR has it, and this script does
+      # not pull in an AUR helper.
+      warn "Google Chrome is AUR-only on Arch: install it with e.g. 'yay -S google-chrome'"
+      SKIPPED+=("google-chrome")
+      return
+      ;;
+  esac
+
+  if have google-chrome || have google-chrome-stable; then
+    ok "Google Chrome installed"
+  fi
+}
+
+# --- outlook (PWA) --------------------------------------------------------
+# Microsoft ships no native Outlook for Linux, and the "new Outlook" is a web
+# app on every platform anyway. Running it as a Chrome app window gives it its
+# own window, icon, dock entry and alt-tab slot instead of a browser tab.
+#
+# Work/school (Microsoft 365) accounts live on outlook.office.com; personal
+# @outlook.com/@hotmail accounts on outlook.live.com. Override with:
+#   OUTLOOK_URL=https://outlook.live.com/mail/0/ ./install.sh outlook
+OUTLOOK_URL="${OUTLOOK_URL:-https://outlook.office.com/mail/}"
+
+module_outlook() {
+  header "Outlook (web app)"
+
+  local browser b
+  for b in google-chrome google-chrome-stable chromium chromium-browser microsoft-edge; do
+    if have "$b"; then browser=$(command -v "$b"); break; fi
+  done
+  if [[ -z "${browser:-}" ]]; then
+    err "no Chromium-based browser found; run ./install.sh chrome first"
+    return
+  fi
+  info "using $browser"
+
+  # Icon: the current Outlook mark, as SVG so it stays sharp at every dock
+  # size. hicolor/scalable is the directory the icon theme spec looks in.
+  local icon_dir="$HOME/.local/share/icons/hicolor/scalable/apps"
+  if [[ -f ./apps/outlook/outlook.svg ]]; then
+    run mkdir -p "$icon_dir"
+    run cp ./apps/outlook/outlook.svg "$icon_dir/outlook.svg"
+    have gtk-update-icon-cache && \
+      run gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" >/dev/null 2>&1
+    ok "icon installed into $icon_dir"
+  else
+    warn "apps/outlook/outlook.svg missing; falling back to a generic mail icon"
+  fi
+
+  # --class is what makes the window match the desktop entry (and so show the
+  # right icon in the dock); without it Chrome derives an unpredictable
+  # WM_CLASS from the URL and GNOME draws a second, generic tile.
+  local desktop_dir="$HOME/.local/share/applications"
+  run mkdir -p "$desktop_dir"
+  if (( DRY_RUN )); then
+    info "[dry-run] write $desktop_dir/outlook.desktop"
+  else
+    cat > "$desktop_dir/outlook.desktop" <<DESKTOP
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Outlook
+GenericName=Email and Calendar
+Comment=Microsoft Outlook, as a standalone web app window
+Exec=$browser --app=$OUTLOOK_URL --class=Outlook
+Icon=$([[ -f "$icon_dir/outlook.svg" ]] && echo outlook || echo internet-mail)
+Terminal=false
+StartupNotify=true
+StartupWMClass=Outlook
+Categories=Network;Email;Office;
+Keywords=email;mail;calendar;outlook;microsoft;office;365;
+DESKTOP
+    ok "created $desktop_dir/outlook.desktop -> $OUTLOOK_URL"
+  fi
+
+  have update-desktop-database && run update-desktop-database "$desktop_dir"
+
+  pin_to_dash outlook.desktop
+}
+
 #------------
 # Driver
 #------------
 
 # Modules that run when no argument is given. `docker` is deliberately left
 # out: it is a disruptive migration, run it on purpose.
-MODULES=(system upgrade git fonts zsh p10k shelltools kitty terminal llm lazydocker snap flatpak)
+MODULES=(system upgrade git fonts zsh p10k shelltools kitty terminal llm lazydocker chrome outlook snap flatpak)
 OPTIONAL_MODULES=(docker)
 
 usage() {
@@ -825,6 +976,9 @@ Modules (all of them run when none is given):
   terminal    make kitty the default terminal emulator
   llm         Node.js and the AI CLIs
   lazydocker  lazydocker
+  chrome      Google Chrome from Google's own repository
+  outlook     Outlook as a Chrome app window, pinned to the dash
+              (OUTLOOK_URL=... to point it at a personal account)
   snap        snap desktop applications
   flatpak     flatpak + flathub remote
 
