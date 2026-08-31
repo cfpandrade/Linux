@@ -30,7 +30,8 @@ unset _p10k
 # PATH, history and shell options
 #------------------------------------------------------------------------------
 
-export TERM=xterm-256color
+# No pisar el TERM que ya fija el emulador (kitty usa xterm-kitty)
+[[ -z "$TERM" || "$TERM" == "dumb" || "$TERM" == "linux" ]] && export TERM=xterm-256color
 export _JAVA_AWT_WM_NONREPARENTING=1   # fix Java AWT under tiling WMs
 
 typeset -U path PATH                   # keep PATH free of duplicates
