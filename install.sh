@@ -24,6 +24,15 @@ USER="${USER:-$(id -un)}"
 SHELL="${SHELL:-$(getent passwd "$USER" | cut -d: -f7)}"
 HOME="${HOME:-$(getent passwd "$USER" | cut -d: -f6)}"
 
+# Several modules install into ~/.local/bin and then look the binary up with
+# `command -v`. When the caller's PATH does not already contain that directory
+# (a first run, before the new .zshrc is sourced) those lookups fail and the
+# modules that depend on them bail out. Put it on the PATH for this process.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) PATH="$HOME/.local/bin:$PATH"; export PATH ;;
+esac
+
 #------------
 # Output helpers
 #------------
@@ -144,10 +153,33 @@ pkg_installed() {
   esac
 }
 
-# Install packages one by one so a single unavailable name does not abort the
-# whole batch (package names drift a lot between releases).
+# Is this name known to the package manager at all? Package names drift a lot
+# between releases, and one unknown name aborts a whole apt/dnf transaction.
+# All three queries read the local metadata cache, so this costs milliseconds.
+pkg_available() {
+  case "$PKG" in
+    apt)
+      local cand
+      cand=$(apt-cache policy -- "$1" 2>/dev/null | sed -n 's/^  Candidate: //p')
+      [[ -n "$cand" && "$cand" != "(none)" ]]
+      ;;
+    dnf)    dnf -q -C info --available "$1" >/dev/null 2>&1 || dnf -q info "$1" >/dev/null 2>&1 ;;
+    yum)    yum -q -C info "$1" >/dev/null 2>&1 || yum -q info "$1" >/dev/null 2>&1 ;;
+    pacman) pacman -Si "$1" >/dev/null 2>&1 ;;
+  esac
+}
+
+# Install everything that is missing in ONE transaction.
+#
+# This used to run one `apt-get install` per package so a single unavailable
+# name could not abort the batch. That is correct but very slow: every
+# invocation re-reads the package lists and re-runs the dpkg triggers
+# (man-db, fontconfig, initramfs, desktop-database), which for ~60 packages
+# means many minutes of work that a single transaction does once. Unknown
+# names are now filtered out beforehand with pkg_available instead, and the
+# one-by-one loop is kept only as the fallback when a batch really fails.
 pkg_install() {
-  local pkg missing=()
+  local pkg missing=() available=()
   apt_preseed
   for pkg in "$@"; do
     pkg_installed "$pkg" && continue
@@ -156,6 +188,43 @@ pkg_install() {
   [[ ${#missing[@]} -eq 0 ]] && { info "all packages already present"; return 0; }
 
   for pkg in "${missing[@]}"; do
+    if pkg_available "$pkg"; then
+      available+=("$pkg")
+    else
+      warn "not available: $pkg"
+      SKIPPED+=("$pkg")
+    fi
+  done
+  [[ ${#available[@]} -eq 0 ]] && return 0
+
+  local cmd output
+  case "$PKG" in
+    apt)    cmd=(sudo env "${APT_ENV[@]}" apt-get install -y -qq "${APT_OPTS[@]}" "${available[@]}") ;;
+    dnf)    cmd=(sudo dnf -y install "${available[@]}") ;;
+    yum)    cmd=(sudo yum -y install "${available[@]}") ;;
+    pacman) cmd=(sudo pacman -S --noconfirm --needed "${available[@]}") ;;
+  esac
+
+  if (( DRY_RUN )); then
+    run "${cmd[@]}"
+    return 0
+  fi
+
+  info "installing ${#available[@]} packages: ${available[*]}"
+  if output=$("${cmd[@]}" </dev/null 2>&1); then
+    ok "installed ${#available[@]} packages"
+    return 0
+  fi
+
+  warn "the batch install failed; retrying one by one to find the culprit"
+  pkg_install_each "${available[@]}"
+}
+
+# Fallback path: same behaviour as before, one package per transaction, so a
+# single broken package is reported by name instead of taking the batch down.
+pkg_install_each() {
+  local pkg
+  for pkg in "$@"; do
     local cmd output
     case "$PKG" in
       apt)    cmd=(sudo env "${APT_ENV[@]}" apt-get install -y -qq "${APT_OPTS[@]}" "$pkg") ;;
@@ -196,8 +265,10 @@ APT_PKGS=(
   zsh zsh-autosuggestions zsh-syntax-highlighting vim neovim tmux
   # core CLI
   git curl wget jq unzip unp ca-certificates gnupg lsof vim-common acl
-  ripgrep fd-find bat lsd duf ncdu htop plocate progress dstat
+  ripgrep fd-find bat lsd duf ncdu htop plocate progress
   ipcalc taskwarrior asciinema imagemagick mariadb-client xclip boxes
+  # dstat was dropped after Ubuntu 24.04; sysstat (iostat/sar/pidstat) replaces it
+  sysstat
   # modern shell workflow
   fzf zoxide atuin git-delta gh pipx
   # desktop / fonts / hardware
